@@ -1,0 +1,19 @@
+#experience {
+    
+    .experience-content {
+        display: flex;
+        width: 100%;
+        max-height: 90%;
+        height: 90%;
+        overflow-y: auto;
+        box-sizing: border-box;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 4rem;
+
+
+        
+
+    }
+}

@@ -1,0 +1,48 @@
+.background {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: #F4F3F3;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+
+}
+
+.background-style {
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+
+
+    .line {
+        display: flex;
+        flex-basis: 25%;
+        z-index: 0;
+
+    }
+
+    .column {
+        display: flex;
+        flex-basis: 25%;
+        z-index: 0;
+
+    }
+
+    .background-color {
+        background-color: $primary-color;
+    }
+}
+
+.background-content {
+    display: flex;
+    width: 85%;
+    height: 85%;
+    z-index: 1;
+    box-shadow: 4px 4px 10px 4px rgba($color: #000000, $alpha: .2);
+    background-color: #fff;
+
+}

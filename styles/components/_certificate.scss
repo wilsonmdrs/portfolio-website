@@ -1,0 +1,29 @@
+.certificate {
+    display: flex;
+    flex-direction: column;
+    width: 17em;
+    height: 21em;
+    border: 2px solid $grayscale-600;
+
+    .certificate-image {
+        width: 100%;
+        height: auto;
+        min-height: 45%;
+        background-color: $primary-color;
+    }
+
+    .certificate-details {
+        display: flex;
+        flex-direction: column;
+        padding: .5rem;
+        gap:1rem;
+
+        p {
+            margin: 0;
+
+            &:first-child {
+                text-align: center;
+            }
+        }
+    }
+}
