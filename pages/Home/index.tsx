@@ -6,6 +6,7 @@ import WhatsAppSVG from '../../assets/icons/whatsapp.svg'
 import LinkedInSVG from '../../assets/icons/linkedin.svg'
 import GithubSVG from '../../assets/icons/github.svg'
 import { NavBar } from '../../components/Navbar'
+import Image from 'next/image'
 
 export const Home = () => {
 
@@ -54,15 +55,15 @@ export const Home = () => {
                         <p className='quote-author'>Albert Einstein</p>
                     </div>
                     <div className='profile-social'>
-                        {/* <div className='social-container'>
-                            <LinkedInSVG />
+                        <div className='social-container'>
+                           <Image src={LinkedInSVG} width={25} height={25} alt="linkedin svg" />
                         </div>
                         <div className='social-container'>
-                            <WhatsAppSVG />
+                        <Image src={GithubSVG} width={25} height={25} alt="github svg" />
                         </div>
                         <div className='social-container'>
-                            <GithubSVG />
-                        </div> */}
+                        <Image src={WhatsAppSVG} width={25} height={25} alt="whatsapp svg" />
+                        </div>
                     </div>
                 </div>
                 {navClass === 'navbar-home' ? (

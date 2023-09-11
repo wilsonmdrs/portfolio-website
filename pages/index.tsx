@@ -3,9 +3,12 @@ import { Education } from "./Education";
 import { Skills } from "./Skills";
 import { Experience } from "./Experience";
 import { Projects } from "./Projects";
-import { Certifications } from "./Certifications";
-import { Contact } from "./Contact";
+  import { Contact } from "./Contact";
 import { Footer } from "../components/Footer";
+import 'swiper/css';
+import 'swiper/css/effect-coverflow';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 export default function App() {
   return (
@@ -15,7 +18,6 @@ export default function App() {
       <Skills />
       <Experience />
       <Projects />
-      <Certifications />
       <Contact />
       <Footer />
     </div>

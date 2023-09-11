@@ -10,8 +10,6 @@
         display: none;
     }
 
-
-
     .navitem {
         display: flex;
         width: 20vw;
@@ -78,7 +76,7 @@
     width: 100vw;
     z-index: 4;
     margin: 0;
-    padding: 10px;
+    padding: 10px ;
     gap: 10px;
     min-height: 7%;
     height: fit-content;
@@ -131,7 +129,6 @@
         color: white;
         transition: .5s ease-in-out;
         text-align: center;
-        // height: fit-content;
           
         &:hover {
             background-color: white;

@@ -3,6 +3,7 @@ import { Carousel, CarouselBody, CarouselFooter } from '../../components/Carouse
 import { Certificate, CertificateProps } from '../../components/Certificate'
 import { Title } from '../../components/Title'
 import Background from '../Background'
+import ias from '../../assets/img/unisul.jpeg'
 
 export const Education = () => {
     const backgroundDesign = [
@@ -13,7 +14,9 @@ export const Education = () => {
     ]
 
     const certificates = [
-        { id: "11", title: "Computer Science Bachelor", content: "content for certification", image: "" },
+        { id: "11", title: "Computer Science Bachelor", 
+        content: "This education has equipped me with a strong foundation in technology and problem-solving, enabling me to tackle complex challenges and contribute to the world of computing", 
+        image: './assets/img/unisul.jpeg' },
     ]
 
     return (

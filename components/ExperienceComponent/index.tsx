@@ -13,7 +13,7 @@ export const ExperienceComponent = ({ title, company, period, activities = []}:E
             <p className="ec-title">{title}</p>
             <p className="ec-company">{company}</p>
             <p className="ec-period">{period}</p>
-            <ul>
+            <ul className="ec-activities">
                 {activities.map(activity => (
                     <li className='ec-activity' key={activity}>{activity}</li>
                 ))}

@@ -14,11 +14,13 @@
 @import "./components/carousel";
 @import "./components/skill-component";
 @import "./components/experience-component";
+@import "./components/footer";
 
-@import "./pages/education";
-@import "./pages/experience";
-@import "./pages/skills";
 @import "./pages/Home";
+@import "./pages/education";
+@import "./pages/skills";
+@import "./pages/experience";
+@import "./pages/contact";
 
 
 html {
