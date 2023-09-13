@@ -1,0 +1,42 @@
+.experience-component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid $primary-color;
+  margin: 0;
+  width: 250px;
+  min-height: 300px;
+  font-size: 12px;
+  gap: 2px;
+  padding: 5px;
+  box-shadow: 2px 4px 8px 3px rgba($color: #000000, $alpha: 0.17);
+
+  p {
+    margin: 0;
+  }
+
+  .ec-title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .ec-company {
+    color: $primary-color;
+  }
+
+  .ec-period {
+    color: $grayscale-200;
+  }
+
+  ul {
+    padding-left: 20px;
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ec-activity {
+    text-align: start;
+    margin: 0;
+  }
+}

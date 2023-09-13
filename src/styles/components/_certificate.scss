@@ -1,0 +1,32 @@
+.certificate {
+  display: flex;
+  flex-direction: column;
+  width: 17em;
+  border: 2px solid $grayscale-600;
+
+  .certificate-image {
+    width: 100%;
+    height: auto;
+    min-height: 45%;
+    background-color: $primary-color;
+    border-bottom: 2px solid $primary-color;
+  }
+
+  .certificate-details {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    gap: 1rem;
+
+    .certificate-title {
+      text-align: center;
+      margin: 0;
+    }
+
+    .certificate-description {
+      text-align: justify;
+      font-size: 0.875rem;
+      text-indent: 1.5rem;
+    }
+  }
+}

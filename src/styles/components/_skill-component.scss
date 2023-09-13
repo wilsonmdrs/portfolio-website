@@ -1,0 +1,31 @@
+.skill-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-sizing: border-box;
+  .skill-name {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+
+  .skill-indicator-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    .skill-indicator {
+      display: flex;
+      width: 200px;
+      height: 20px;
+      border: 1px solid $primary-color;
+      .level-filled {
+        display: flex;
+        background-color: $primary-color;
+      }
+    }
+    .skill-level {
+      margin: 0;
+      font-size: 0.875rem;
+    }
+  }
+}

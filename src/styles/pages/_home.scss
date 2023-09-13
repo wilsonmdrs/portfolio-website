@@ -1,0 +1,85 @@
+.profile-container {
+  display: flex;
+  flex-basis: 50%;
+  width: 100%;
+  flex-direction: column;
+  padding: 20px;
+
+  .profile-picture {
+    display: flex;
+    flex-basis: 30%;
+    justify-content: center;
+    align-items: center;
+
+    .profile-image {
+      width: 150px;
+      height: 150px;
+      border: 4px solid $primary-color;
+      border-radius: 50%;
+      justify-content: center;
+      background-position: center;
+      background-image: url("../../assets/img/profile-wilson.jpg");
+    }
+  }
+
+  .profile-title {
+    display: flex;
+    flex-basis: 10%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+
+    h1 {
+      margin: 0;
+      font-size: 27px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 17px;
+      color: #747070;
+    }
+  }
+
+  .profile-quote {
+    display: flex;
+    flex-basis: 30%;
+    flex-direction: column;
+    text-align: center;
+
+    .quote-text {
+      font-family: "Quintessential", cursive;
+      margin: 0;
+      padding: 10px 30px;
+    }
+
+    .quote-author {
+      margin: 0;
+      padding: 5px;
+      font-weight: bolder;
+    }
+  }
+
+  .profile-social {
+    display: flex;
+    flex-basis: 30%;
+    justify-content: center;
+
+    .social-container {
+      display: flex;
+      flex-basis: 33, 333%;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 20px;
+
+      svg {
+        cursor: pointer;
+
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+}

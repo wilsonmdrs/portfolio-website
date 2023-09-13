@@ -1,0 +1,48 @@
+#projects {
+  .projects-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    flex-direction: column;
+    gap: 20px;
+
+    .loading-container {
+      display: flex;
+      gap: 20px;
+
+      .loading-indicator {
+        display: flex;
+        position: relative;
+        width: 20vw;
+        height: 40px;
+        border: 2px solid $primary-color;
+
+        .loading-filled {
+          position: absolute;
+          width: 0%;
+          height: 100%;
+          background-color: $primary-color;
+        }
+      }
+    }
+    .loading-percentage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 30px;
+      p {
+        margin: 0;
+      }
+    }
+  }
+}
+
+@keyframes loading-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 90%;
+  }
+}

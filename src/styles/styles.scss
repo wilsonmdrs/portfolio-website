@@ -1,0 +1,42 @@
+// Variables
+// colors
+@import "./abstract/colors";
+// Dimension
+@import "./abstract/variables";
+// Fonts
+@import "./abstract/fonts";
+// imports
+
+@import "./components/background";
+@import "./components/navbar";
+@import "./components/title";
+@import "./components/certificate";
+@import "./components/carousel";
+@import "./components/skill-component";
+@import "./components/experience-component";
+@import "./components/footer";
+
+@import "./pages//home";
+@import "./pages/education";
+@import "./pages/skills";
+@import "./pages/experience";
+@import "./pages/contact";
+@import "./pages/projects";
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  scroll-behavior: smooth;
+}
+
+.container {
+  display: flex;
+  flex-basis: 100%;
+  flex-direction: column;
+  width: 100%;
+  overflow: scroll;
+}
