@@ -1,5 +1,4 @@
 import { CarouselSkills } from "@/components/carousel-skills";
-import { Button } from "@/components/ui/button";
 import { Skill } from "@/types";
 
 function calculateSkillTime(since: string): string {

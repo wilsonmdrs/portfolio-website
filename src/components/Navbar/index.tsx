@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ShoppingCart } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 import {
   NavigationMenu,
@@ -79,28 +79,28 @@ function MobileLink({
 }
 
 // Cart button (desktop)
-function CartButton({ count }: { count: number }) {
-  return (
-    <Button
-      asChild
-      variant="ghost"
-      size="icon"
-      className="relative hidden md:inline-flex"
-      aria-label="Open cart"
-    >
-      <Link href="/cart">
-        <ShoppingCart className="h-5 w-5 stroke-white" />
-        {count > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-primary-foreground">
-            {count}
-          </span>
-        )}
-      </Link>
-    </Button>
-  );
-}
+// function CartButton({ count }: { count: number }) {
+//   return (
+//     <Button
+//       asChild
+//       variant="ghost"
+//       size="icon"
+//       className="relative hidden md:inline-flex"
+//       aria-label="Open cart"
+//     >
+//       <Link href="/cart">
+//         <ShoppingCart className="h-5 w-5 stroke-white" />
+//         {count > 0 && (
+//           <span className="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-primary-foreground">
+//             {count}
+//           </span>
+//         )}
+//       </Link>
+//     </Button>
+//   );
+// }
 
-export function Navbar({ cartCount = 4 }: { cartCount?: number }) {
+export function Navbar() {
   const [open, setOpen] = React.useState(false);
 
   return (

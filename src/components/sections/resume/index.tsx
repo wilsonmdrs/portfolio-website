@@ -1,5 +1,3 @@
-import { CarouselSkills } from "@/components/carousel-skills";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
 
