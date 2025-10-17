@@ -1,49 +1,84 @@
+"use client";
+
 import Link from "next/link";
-import WhatsappIcon from "../../assets/icons/whatsapp-footer.svg";
-import GithubIcon from "../../assets/icons/github-footer.svg";
-import TelegramIcon from "../../assets/icons/telegram-footer.svg";
-import LinkedinIcon from "../../assets/icons/linkedin-footer.svg";
-import MailIcon from "../../assets/icons/google-footer.svg";
-import Image from "next/image";
-export const Footer = () => {
+import { Twitter, Mail, Github } from "lucide-react";
+
+export function Footer() {
   return (
-    <footer>
-      <div className="content-container">
-        <div className="title-container">
-          <h1>Wilson Medeiros</h1>
-          <h2>Software Engineer</h2>
+    <footer className="flex w-full text-tertiary bg-gray-950 backdrop-blur justify-center items-center">
+      <div className="w-full max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-3">
+          {/* Brand / About */}
+          <div>
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <span className="text-xl text-primary font-semibold tracking-widest ">
+                WM
+              </span>
+            </Link>
+            <p className="text-sm text-tertiary font-semibold max-w-xs">
+              Wilson Medeiros
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div className="">
+            <h4 className="flex justify-center mb-3 text-sm font-semibold uppercase tracking-wide  text-tertiary">
+              Quick Links
+            </h4>
+            <ul className="flex flex-col items-center space-y-2 text-sm ">
+              <li>
+                <Link href="/about" className="hover:text-primary transition">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link href="/resume" className="hover:text-primary transition">
+                  Resume
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/featured-works"
+                  className="hover:text-primary transition"
+                >
+                  Featured Works
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-primary transition">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Social & Newsletter */}
+          <div>
+            <h4 className="flex mb-3 text-sm font-semibold uppercase tracking-wide  justify-end items-end text-tertiary">
+              Stay Connected
+            </h4>
+            <div className="flex gap-4 mb-4 w-full justify-end">
+              <Link
+                href="#"
+                aria-label="Github"
+                className="hover:text-primary transition"
+              >
+                <Github className="h-5 w-5" />
+              </Link>
+              <Link
+                href="mailto:info@example.com"
+                aria-label="Email"
+                className="hover:text-primary transition"
+              >
+                <Mail className="h-5 w-5" />
+              </Link>
+            </div>
+            <p className="flex text-xs text-muted-foreground  w-full justify-end">
+              © {new Date().getFullYear()} Wilson Medeiros. All rights reserved.
+            </p>
+          </div>
         </div>
-        <div className="navigation">
-          <Link className="nav-item" scroll={false} href={"#home"}>
-            Home
-          </Link>
-          <Link className="nav-item" scroll={false} href={"#education"}>
-            Education
-          </Link>
-          <Link className="nav-item" scroll={false} href={"#skills"}>
-            Skills
-          </Link>
-          <Link className="nav-item" scroll={false} href={"#experience"}>
-            Experience
-          </Link>
-          <Link className="nav-item" scroll={false} href={"#projects"}>
-            Projects
-          </Link>
-          <Link className="nav-item" scroll={false} href={"#contact"}>
-            Contact
-          </Link>
-        </div>
-        <div className="contacts">
-          <Image className="contact-icon" src={TelegramIcon} alt="telegram" />
-          <Image className="contact-icon" src={WhatsappIcon} alt="telegram" />
-          <Image className="contact-icon" src={GithubIcon} alt="telegram" />
-          <Image className="contact-icon" src={LinkedinIcon} alt="telegram" />
-          <Image className="contact-icon" src={MailIcon} alt="telegram" />
-        </div>
-      </div>
-      <div className="rights">
-        <p>Designed and Develloped by Wilson Medeiros Jr. - 2023</p>
       </div>
     </footer>
   );
-};
+}
