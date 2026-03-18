@@ -43,7 +43,7 @@ function DesktopLink({ href, label }: { href: string; label: string }) {
       asChild
       className={cn(
         "px-3 py-2 text-sm weight-bold font-medium rounded transition  hover:text-gray-900 hover:bg-primary",
-        isActive ? "bg-primary/10 text-primary" : "text-white"
+        isActive ? "bg-primary/10 text-primary" : "text-white",
       )}
     >
       <Link href={href}>{label}</Link>
@@ -71,7 +71,7 @@ function MobileLink({
         "block w-full rounded-xl px-3 py-2 text-base",
         isActive
           ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
       {label}
