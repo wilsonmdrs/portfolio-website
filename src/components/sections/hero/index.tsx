@@ -4,7 +4,10 @@ import { DownloadCV } from "./downloadCV";
 
 export function HeroSection() {
   return (
-    <section className="bg-gray-900 min-h-screen flex flex-col w-full p-6">
+    <section
+      id="hero"
+      className="bg-gray-900 min-h-screen flex flex-col w-full p-6"
+    >
       <div className="flex flex-1 max-w-[1440px] w-full justify-center flex-col items-center ">
         <div className="flex flex-col gap-4 max-w-2xl">
           <span className="flex items-center gap-2">

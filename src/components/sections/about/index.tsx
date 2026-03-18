@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 export function AboutSection() {
   return (
-    <section className="bg-gray-950  flex flex-col w-full p-6 py-20">
+    <section id="about" className="bg-gray-950  flex flex-col w-full p-6 py-20">
       <div className="flex flex-1 max-w-[1440px] w-full justify-center flex-col items-center ">
         <div className="flex flex-col gap-6 max-w-3xl">
           <span className="flex items-center gap-4 pb-6">

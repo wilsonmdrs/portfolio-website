@@ -26,17 +26,18 @@ function cn(...classes: Array<string | false | null | undefined>) {
 }
 
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/resume", label: "Resume" },
-  { href: "/featured-works", label: "Featured Works" },
-  { href: "/contact", label: "Contact" },
+  { href: "#hero", label: "Home" },
+  { href: "#about", label: "About" },
+  { href: "#skills", label: "Skills" },
+  { href: "#resume", label: "Resume" },
+  { href: "#featured-works", label: "Featured Works" },
+  { href: "#contact", label: "Contact" },
 ];
 
 // Desktop link
 function DesktopLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive = pathname.includes(href);
   return (
     <NavigationMenuLink
       asChild

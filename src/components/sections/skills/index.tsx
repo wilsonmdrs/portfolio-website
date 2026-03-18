@@ -26,7 +26,10 @@ const skills: Skill[] = [
 
 export function SkillsSection() {
   return (
-    <section className="bg-gray-900  flex flex-col w-full p-6 py-20">
+    <section
+      id="skills"
+      className="bg-gray-900  flex flex-col w-full p-6 py-20"
+    >
       <div className="flex flex-1 max-w-[1440px] w-full justify-center flex-col items-center ">
         <div className="flex flex-col gap-6 max-w-3xl">
           <span className="flex items-center gap-4 pb-6">
