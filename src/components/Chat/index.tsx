@@ -4,6 +4,7 @@ import { KeyboardEvent, useState } from "react";
 import { Button } from "../ui/button";
 import { MessageCircle, XIcon } from "lucide-react";
 import { useChat } from "@/app/hooks/useChat";
+import { randomUUID } from "crypto";
 
 type Message = {
   id: number;
@@ -11,7 +12,7 @@ type Message = {
   content: string;
 };
 
-const witheTextBg = "bg-white text-black px-1";
+const userId = randomUUID();
 
 export const Chat = () => {
   const [open, setOpen] = useState(false);
@@ -19,7 +20,7 @@ export const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const { sendMessage } = useChat({
-    userId: window.navigator.userAgent,
+    userId,
   });
 
   const handleKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
