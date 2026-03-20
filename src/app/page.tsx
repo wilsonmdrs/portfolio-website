@@ -1,3 +1,4 @@
+import { Chat } from "@/components/Chat";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { AboutSection } from "@/components/sections/about";
@@ -8,6 +9,7 @@ import { SkillsSection } from "@/components/sections/skills";
 export default function Home() {
   return (
     <div className="font-sans flex flex-1 flex-col items-center justify-items-center min-h-screen">
+      <Chat />
       <Navbar />
       <main className="flex flex-col  flex-1 row items-center w-full   sm:items-start">
         <HeroSection />

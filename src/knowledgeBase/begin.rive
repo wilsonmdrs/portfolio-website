@@ -1,0 +1,40 @@
+! version = 2.0 wilson medeiros who is wilson souza de medeiros junior tell me about wilson
+! array skills_words = skills skill stack technologies tech stack tech skills
+! array edu_words = education degree graduation university college
+! array lang_words = languages language speak speaks
+! array exp_words = experience work experience employment roles positions timeline history
+! array companies = mobiweb red it exact code sistemas
+
+> begin
+  + request
+  * <get met> == undefined => <set met=true> {topic=random} {ok}
+  - {ok}
+< begin
+``
+
+! var botname = Smart Assistant
+! var locale = Portugal
+
+! var cv_name = Wilson Souza de Medeiros Junior
+! var cv_phone = +351 931-919-391
+! var cv_email = wilsonmdrs@gmail.com
+! var cv_linkedin = https://linkedin.com/in/wilson-medeiros-381711109
+! var cv_location = Portugal
+! var cv_summary = As a Software Engineer focused on web and mobile, I’m a motivated and adaptable team player with strong technical expertise, attention to detail, and a positive attitude.
+
+! var cv_roles =
+^ React Native Developer @ Mobiweb (Jun 2023 – Present) |
+^ Frontend Developer @ Red IT (Jul 2022 – Mar 2023) |
+^ Software Engineer @ Exact Code Sistemas (Oct 2019 – Mar 2022) |
+^ Software Developer (Freelancer) @ Exact Code Sistemas (Mar 2017 – Oct 2019)
+
+! var cv_education = Computer Science (Bachelor) — Brazil (Mar 2012 – Jun 2022)
+! var cv_languages = Portuguese (native), English (full professional)
+! var cv_skills = JavaScript, TypeScript, React, React Native, HTML5, CSS3, Styled Components, SASS, Node.js, Python, React Testing Library, Jest, Storybook, React Query, Tailwind, Figma, Adobe XD
+
+! array greet = hi hey hello howdy greetings good morning good afternoon good evening
+! array contact = phone phone number telephone tel contact number cell mobile
+! array mail = mail e-mail email address email
+! array link = linkedin profile linked-in link
+! array locale_words = country location where you live where do you live based location live
+

@@ -1,0 +1,21 @@
+! version = 2.0
+
++ *
+@ {topic=fallback} *
+
+
+> topic fallback includes cv
+
+  + *
+  * <get name> != undefined => I didn’t fully get that, <get name>. You can ask about:
+  ^ • contact (phone, email, LinkedIn) |
+  ^ • skills / languages |
+  ^ • experience at Mobiweb, Red IT, Exact Code Sistemas |
+  ^ • education | summary
+  - I didn’t quite follow. You can ask about:
+  ^ • contact (phone, email, LinkedIn) |
+  ^ • skills / languages |
+  ^ • experience at Mobiweb, Red IT, Exact Code Sistemas |
+  ^ • education | summary
+
+< topic

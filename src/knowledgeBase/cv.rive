@@ -1,0 +1,97 @@
+! version = 2.0
+
+> topic cv includes smalltalk
+
+  // --- High-level “who is” / summary ---
+  + (@whois)
+  - <bot cv_name> is a Software Engineer based in <bot cv_location>. ^
+    <bot cv_summary>
+
+  + (summary|profile|professional summary)
+  - <bot cv_summary>
+
+  // --- Contact details ---
+  + (@contact)
+  - You can reach <bot cv_name> at <bot cv_phone>.
+
+  + (@mail)
+  - Email: <bot cv_email>
+
+  + (@link)
+  - LinkedIn: <bot cv_linkedin>
+
+  + (@locale_words)
+  - <bot cv_name> is based in <bot cv_location>.
+
+  // --- Skills ---
+  + (@skills_words)
+  - Key skills: <bot cv_skills>
+
+  // --- Languages ---
+  + (@lang_words)
+  - Languages: <bot cv_languages>
+
+  // --- Education ---
+  + (@edu_words)
+  - Education: <bot cv_education>
+
+  // --- Experience overview ---
+  + (@exp_words)
+  - Experience:
+  ^ • <bot cv_roles>
+
+  // --- Company-specific details ---
+  + (tell me about|what about|experience at|work at) (mobiweb|red it|exact code sistemas)
+  * <star2> == mobiweb => React Native Developer @ Mobiweb (Jun 2023 – Present). Highlights:
+  ^ • Led architecture design & development of RN apps
+  ^ • Code reviews and best practices
+  ^ • Fixed bugs and implemented measures to prevent future issues
+  ^ • Built responsive, accessible, user-friendly layouts
+  - {ok}
+
+  % React Native Developer @ Mobiweb*
+  + *
+  - That’s the recent role. Anything else you’d like to know?
+
+  + (tell me about|what about|experience at|work at) red it
+  - Frontend Developer @ Red IT (Jul 2022 – Mar 2023). Highlights:
+  ^ • Built interfaces with design patterns
+  ^ • Worked in a DevOps environment
+  ^ • Wrote docs and conducted training on testing React components with Jest
+  ^ • Mentored junior frontend devs
+  ^ • Shipped bug fixes and prevention measures
+
+  + (tell me about|what about|experience at|work at) exact code sistemas
+  - Software Engineer (Oct 2019 – Mar 2022). Highlights:
+  ^ • Planned, developed, tested, deployed, and maintained React web apps and React Native mobile apps
+  ^ • Built RESTful APIs with Node.js and Python
+  ^ • Troubleshot and remediated production issues
+  ^ • Built knowledge bases for virtual assistants
+  ^
+  ^ Freelancer (Mar 2017 – Oct 2019). Highlights:
+  ^ • React & React Native for web/mobile
+  ^ • RESTful APIs with Node.js and Python
+  ^ • Applied theoretical computing concepts in AI projects
+  ^ • Strengthened web fundamentals
+
+  // --- Targeted Q&A ---
+  + (phone|phone number|contact number) of (wilson|wilson medeiros)
+  - <bot cv_phone>
+
+  + (email|email address) of (wilson|wilson medeiros)
+  - <bot cv_email>
+
+  + (linkedin) of (wilson|wilson medeiros)
+  - <bot cv_linkedin>
+
+  + (where is|where does) (wilson|he) (from|located|based|live)
+  - <bot cv_location>
+
+  + (what (does|did) (he|wilson) do at) (mobiweb|red it|exact code sistemas)
+  @ (tell me about) <star3>
+
+  // --- Friendly re-prompts ---
+  + (more details|tell me more)
+  - What would you like to dive into—skills, a specific company, education, or languages?
+
+< topic
