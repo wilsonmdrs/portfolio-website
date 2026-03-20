@@ -25,6 +25,7 @@ export function useChat({ userId }: { userId: string }) {
       startedRef.current = true;
       return true;
     } catch (e) {
+      console.log(e);
       setError("Failed to start conversation");
       return false;
     }
@@ -53,6 +54,7 @@ export function useChat({ userId }: { userId: string }) {
         setReply(data.reply || "");
         return data.reply || "";
       } catch (e) {
+        console.log(e);
         setError("Failed to send message");
         return "";
       } finally {
