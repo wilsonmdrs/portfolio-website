@@ -1,14 +1,10 @@
 ! version = 2.0
 
-> topic router includes greetings smalltalk cv fallback
+  // + (cv|resume|about wilson|about my cv)
+  // - Switching to CV. {topic=cv}
 
-  + (cv|resume|about wilson|about my cv)
-  - Switching to CV. {topic=cv}
+  // + (chat|small talk|conversation)
+  // - Sure. {topic=smalltalk}
 
-  + (chat|small talk|conversation)
-  - Sure. {topic=smalltalk}
-
-  + (reset|start over)
-  - Resetting. {topic=greetings}
-
-< topic
+  // + (reset|start over)
+  // - Resetting. {topic=greetings}

@@ -4,15 +4,15 @@ import { KeyboardEvent, useState } from "react";
 import { Button } from "../ui/button";
 import { MessageCircle, XIcon } from "lucide-react";
 import { useChat } from "@/app/hooks/useChat";
-import { randomUUID } from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
 type Message = {
-  id: number;
+  id: string;
   user: string;
   content: string;
 };
 
-const userId = randomUUID();
+const userId = uuidv4();
 
 export const Chat = () => {
   const [open, setOpen] = useState(false);
@@ -28,18 +28,17 @@ export const Chat = () => {
       if (value === "exit") {
         setOpen(false);
       } else {
-        const userId = new Date().getDate();
         const res = await sendMessage(value);
         setMessages((prev) => [
           {
             user: "wm/chat",
             content: res,
-            id: new Date().getDate(),
+            id: uuidv4(),
           },
           {
             user: "wm/visitor",
             content: value,
-            id: userId,
+            id: uuidv4(),
           },
           ...prev,
         ]);
