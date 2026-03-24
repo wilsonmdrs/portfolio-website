@@ -14,7 +14,7 @@ export function QualificationCard({
   institution,
 }: QualificationCardProps) {
   return (
-    <Card className="min-w-1/3 lg:max-w-[40%] rounded bg-gray-950 hover:bg-gray-800 transition-all duration-500 hover:scale-105">
+    <Card className=" rounded bg-gray-950 hover:bg-gray-800 transition-all duration-500 hover:scale-105">
       <CardContent className="gap-2 flex flex-col">
         <p className="flex text-sm font-medium text-gray-400">{date}</p>
         <p className="flex text-md font-bold text-primary">{title}</p>
