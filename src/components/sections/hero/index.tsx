@@ -3,18 +3,17 @@ import { Github, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
 import { DownloadCV } from "./downloadCV";
 import { motion } from "motion/react";
+import { ScrollDown } from "@/components/ScrollDown";
 
 export function HeroSection() {
   return (
     <motion.section
       id="hero"
-      className="bg-gray-900 min-h-screen flex flex-col w-full p-6"
+      className="bg-gray-900 min-h-screen flex flex-col w-full p-6 relative"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
-      <ScrollDown />
-
       <div className="flex flex-1 max-w-[1440px] w-full justify-center flex-col items-center ">
         <div className="flex flex-col gap-4 max-w-2xl">
           <motion.span
@@ -82,6 +81,7 @@ export function HeroSection() {
         >
           <Mail className="h-5 w-5" />
         </Link>
+        {/* <ScrollDown /> */}
       </motion.div>
     </motion.section>
   );
