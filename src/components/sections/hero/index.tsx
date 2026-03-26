@@ -13,6 +13,8 @@ export function HeroSection() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
+      <ScrollDown />
+
       <div className="flex flex-1 max-w-[1440px] w-full justify-center flex-col items-center ">
         <div className="flex flex-col gap-4 max-w-2xl">
           <motion.span
