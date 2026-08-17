@@ -61,21 +61,25 @@ export function HeroSection() {
         transition={{ duration: 0.5, delay: 1.0 }}
       >
         <Link
-          href="#"
+          href="https://www.linkedin.com/in/wilsonmdrs"
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label="Linkedin"
           className="hover:text-primary transition"
         >
           <Linkedin className="h-5 w-5" />
         </Link>
         <Link
-          href="#"
+          href="https://github.com/wilsonmdrs"
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label="Github"
           className="hover:text-primary transition"
         >
           <Github className="h-5 w-5" />
         </Link>
         <Link
-          href="mailto:info@example.com"
+          href="mailto:wilsonmdrs@gmail.com"
           aria-label="Email"
           className="hover:text-primary transition"
         >

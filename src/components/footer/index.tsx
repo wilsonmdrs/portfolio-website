@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Mail, Github } from "lucide-react";
+import { Mail, Github, Linkedin } from "lucide-react";
 import { motion } from "motion/react";
 
 export function Footer() {
@@ -57,7 +57,17 @@ export function Footer() {
                 transition={{ duration: 0.5, delay: 0.6 }}
                 viewport={{ once: true }}
               >
-                <Link href="/about" className="hover:text-primary transition">
+                <Link href="#home" className="hover:text-primary transition">
+                  Home
+                </Link>
+              </motion.li>
+              <motion.li
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <Link href="#about" className="hover:text-primary transition">
                   About
                 </Link>
               </motion.li>
@@ -67,8 +77,8 @@ export function Footer() {
                 transition={{ duration: 0.5, delay: 0.7 }}
                 viewport={{ once: true }}
               >
-                <Link href="/resume" className="hover:text-primary transition">
-                  Resume
+                <Link href="#skills" className="hover:text-primary transition">
+                  Skills
                 </Link>
               </motion.li>
               <motion.li
@@ -77,21 +87,8 @@ export function Footer() {
                 transition={{ duration: 0.5, delay: 0.8 }}
                 viewport={{ once: true }}
               >
-                <Link
-                  href="/featured-works"
-                  className="hover:text-primary transition"
-                >
-                  Featured Works
-                </Link>
-              </motion.li>
-              <motion.li
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.9 }}
-                viewport={{ once: true }}
-              >
-                <Link href="/contact" className="hover:text-primary transition">
-                  Contact
+                <Link href="#resume" className="hover:text-primary transition">
+                  Resume
                 </Link>
               </motion.li>
             </ul>
@@ -115,7 +112,24 @@ export function Footer() {
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 <Link
-                  href="#"
+                  href="https://www.linkedin.com/in/wilsonmdrs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Linkedin"
+                  className="hover:text-primary transition"
+                >
+                  <Linkedin className="h-5 w-5" />
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <Link
+                  href="https://github.com/wilsonmdrs"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label="Github"
                   className="hover:text-primary transition"
                 >
@@ -128,7 +142,7 @@ export function Footer() {
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 <Link
-                  href="mailto:info@example.com"
+                  href="mailto:wilsonmdrs@gmail.com"
                   aria-label="Email"
                   className="hover:text-primary transition"
                 >
