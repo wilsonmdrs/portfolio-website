@@ -2,6 +2,7 @@
 import RiveScript from "rivescript";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { recordConversationTurn } from "./chatHistory";
 import { preProcessEn } from "./textPreps.en";
 
 const KB_ROOT = path.join(process.cwd(), "src", "knowledgeBase");
@@ -89,6 +90,12 @@ export async function ask(message: string, userId: string): Promise<string> {
 
   // 3) Ask RiveScript with normalized English
   const reply = await bot.reply(userId, prep.normalized);
+  recordConversationTurn({
+    userId,
+    message,
+    normalizedMessage: prep.normalized,
+    reply,
+  });
   console.log("Reply", reply);
   return reply;
 }

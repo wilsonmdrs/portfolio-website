@@ -13,17 +13,23 @@ type Message = {
   content: string;
 };
 
-const userId = uuidv4();
-
 export const Chat = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [userId] = useState(() => {
+    if (typeof window === "undefined") return uuidv4();
+    const stored = window.localStorage.getItem("wm-chat-user-id");
+    if (stored) return stored;
+    const id = uuidv4();
+    window.localStorage.setItem("wm-chat-user-id", id);
+    return id;
+  });
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const chatRef = useRef<HTMLDivElement | null>(null);
 
-  const { sendMessage } = useChat({
+  const { sendMessage, loadHistory } = useChat({
     userId,
   });
 
@@ -49,6 +55,32 @@ export const Chat = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    loadHistory()
+      .then(({ history }) => {
+        if (history.length === 0) return;
+        setMessages(
+          history.flatMap((turn) => [
+            {
+              id: `${turn.id}-user`,
+              user: "wm/visitor",
+              content: turn.message,
+            },
+            {
+              id: `${turn.id}-bot`,
+              user: "wm/chat",
+              content: turn.reply,
+            },
+          ]),
+        );
+      })
+      .catch(() => {
+        setMessages([]);
+      });
+  }, [loadHistory, open]);
 
   const handleKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.code === "Enter" && value.trim().length > 0) {

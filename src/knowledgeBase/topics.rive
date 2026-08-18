@@ -1,10 +1,10 @@
 ! version = 2.0
 
-  // + (cv|resume|about wilson|about my cv)
-  // - Switching to CV. {topic=cv}
++ (cv|resume|about wilson|about my cv|wilson cv)
+- Sure, let's talk about Wilson's CV. {topic=cv}
 
-  // + (chat|small talk|conversation)
-  // - Sure. {topic=smalltalk}
++ (chat|small talk|conversation|talk to me)
+- Sure, let's chat. {topic=smalltalk}
 
-  // + (reset|start over)
-  // - Resetting. {topic=greetings}
++ (reset|start over|go home|home)
+- Resetting our conversation. {topic=random}

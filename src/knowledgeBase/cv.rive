@@ -1,91 +1,71 @@
 ! version = 2.0
 
-  // // --- High-level “who is” / summary ---
-  // + (@whois)
-  // - <bot cv_name> is a Software Engineer based in <bot cv_location>. ^
-  //   <bot cv_summary>
+> topic cv
 
-  // + (summary|profile|professional summary)
-  // - <bot cv_summary>
++ (who is wilson|about wilson|tell me about wilson|who are you|what is your cv summary|summary|profile|professional summary|about yourself)
+- <bot cv_summary>
 
-  // // --- Contact details ---
-  // + (@contact)
-  // - You can reach <bot cv_name> at <bot cv_phone>.
++ (what is your name|your name|who is wilson medeiros|who is wilson souza de medeiros junior)
+- I am <bot cv_name>.
 
-  // + (@mail)
-  // - Email: <bot cv_email>
++ (where are you from|where do you live|location|based in|where is wilson based)
+- <bot cv_location>
 
-  // + (@link)
-  // - LinkedIn: <bot cv_linkedin>
++ (how can i contact you|contact|phone|email|linkedin|linkedin profile|contact details)
+- Phone: <bot cv_phone>. Email: <bot cv_email>. LinkedIn: <bot cv_linkedin>.
 
-  // + (@locale_words)
-  // - <bot cv_name> is based in <bot cv_location>.
++ (what are your skills|skills|skill set|tech stack|technologies|stack|what do you know)
+- <bot cv_skills>
 
-  // // --- Skills ---
-  // + (@skills_words)
-  // - Key skills: <bot cv_skills>
++ (what languages do you speak|languages|language)
+- <bot cv_languages>
 
-  // // --- Languages ---
-  // + (@lang_words)
-  // - Languages: <bot cv_languages>
++ (education|degree|university|college|graduation|school)
+- <bot cv_education>
 
-  // // --- Education ---
-  // + (@edu_words)
-  // - Education: <bot cv_education>
++ (what is your experience|experience|work experience|career|employment history|professional experience)
+- <bot cv_roles>
 
-  // // --- Experience overview ---
-  // + (@exp_words)
-  // - Experience:
-  // ^ • <bot cv_roles>
++ (tell me about smart debrief|what did you do at smart debrief|experience at smart debrief)
+- At Smart Debrief, I developed core frontend features for audio upload, playback, and meeting processing workflows. I also integrated AI transcription and summarization outputs into a clear interface and improved performance for large audio files and long transcripts.
 
-  // // --- Company-specific details ---
-  // + (tell me about|what about|experience at|work at) (mobiweb|red it|exact code sistemas)
-  // * <star2> == mobiweb => React Native Developer @ Mobiweb (Jun 2023 – Present). Highlights:
-  // ^ • Led architecture design & development of RN apps
-  // ^ • Code reviews and best practices
-  // ^ • Fixed bugs and implemented measures to prevent future issues
-  // ^ • Built responsive, accessible, user-friendly layouts
-  // - {ok}
++ (tell me about moomenti|what did you do at moomenti|experience at moomenti)
+- At Moomenti, I delivered robust fixes, improved architecture, improved CI/CD, and wrote documentation to speed up onboarding.
 
++ (tell me about red it|what did you do at red it|experience at red it)
+- At Red IT, I built interfaces with design patterns, worked in a DevOps environment, wrote testing documentation for React components with Jest, helped junior frontend developers, and fixed bugs with prevention measures.
 
++ (tell me about exact code sistemas|what did you do at exact code sistemas|experience at exact code sistemas)
+- At Exact Code Sistemas, I planned, developed, tested, deployed, and maintained React web apps and React Native mobile apps, built RESTful APIs with Node.js and Python, handled troubleshooting, and created knowledge bases for virtual assistants.
 
-  // + (tell me about|what about|experience at|work at) red it
-  // - Frontend Developer @ Red IT (Jul 2022 – Mar 2023). Highlights:
-  // ^ • Built interfaces with design patterns
-  // ^ • Worked in a DevOps environment
-  // ^ • Wrote docs and conducted training on testing React components with Jest
-  // ^ • Mentored junior frontend devs
-  // ^ • Shipped bug fixes and prevention measures
++ (tell me about your frontend experience|frontend|frontend developer|react)
+- I have strong frontend experience with React, React Native, Next.js, TypeScript, JavaScript, and modern component-based architecture.
 
-  // + (tell me about|what about|experience at|work at) exact code sistemas
-  // - Software Engineer (Oct 2019 – Mar 2022). Highlights:
-  // ^ • Planned, developed, tested, deployed, and maintained React web apps and React Native mobile apps
-  // ^ • Built RESTful APIs with Node.js and Python
-  // ^ • Troubleshot and remediated production issues
-  // ^ • Built knowledge bases for virtual assistants
-  // ^
-  // ^ Freelancer (Mar 2017 – Oct 2019). Highlights:
-  // ^ • React & React Native for web/mobile
-  // ^ • RESTful APIs with Node.js and Python
-  // ^ • Applied theoretical computing concepts in AI projects
-  // ^ • Strengthened web fundamentals
++ (tell me about mobile development|mobile|react native|app manager|ios|android)
+- I led React Native mobile architecture and managed the mobile release process for iOS and Android as App Manager.
 
-  // // --- Targeted Q&A ---
-  // + (phone|phone number|contact number) of (wilson|wilson medeiros)
-  // - <bot cv_phone>
++ (tell me about testing|tests|unit tests|integration tests|jest|react testing library)
+- I championed test strategy and built unit and integration tests with Jest and React Testing Library to reduce regressions.
 
-  // + (email|email address) of (wilson|wilson medeiros)
-  // - <bot cv_email>
++ (tell me about design|ui|ux|figma|adobe xd|styled components|sass|tailwind)
+- I developed interfaces based on design patterns and worked with Figma, Adobe XD, Styled Components, SASS, and Tailwind.
 
-  // + (linkedin) of (wilson|wilson medeiros)
-  // - <bot cv_linkedin>
++ (tell me about backend|api|node|python|rest|restful api)
+- I built RESTful APIs with Node.js and Python and collaborated closely with backend teams to keep data structures and processing pipelines consistent.
 
-  // + (where is|where does) (wilson|he) (from|located|based|live)
-  // - <bot cv_location>
++ (tell me about ai|artificial intelligence|transcription|summarization|knowledge base)
+- I worked on AI-driven transcription and summarization interfaces and also developed knowledge bases for virtual assistants.
 
-  // + (what (does|did) (he|wilson) do at) (mobiweb|red it|exact code sistemas)
-  // @ (tell me about) <star3>
++ (tell me about leadership|lead|manager|mentoring|code review|team)
+- I conducted code reviews, assisted junior frontend developers, collaborated with design, backend, QA, and product teams, and helped define technical solutions and roadmaps.
 
-  // // --- Friendly re-prompts ---
-  // + (more details|tell me more)
-  // - What would you like to dive into—skills, a specific company, education, or languages?
++ (what tools do you use|tools|storybook|react query|tailwind|jest|figma|adobe xd)
+- Tools and libraries I use include Storybook, React Query, Tailwind, Jest, React Testing Library, Figma, and Adobe XD.
+
++ (can you summarize your career|career summary|tell me more|more details)
+- I started as a freelancer, moved through software engineering and frontend roles, and now focus on frontend and mobile development with strong attention to quality, performance, and maintainability.
+
++ *
+- I did not quite follow. You can ask about Wilson's summary, contact details, skills, languages, education, or experience at Smart Debrief, Moomenti, Red IT, or Exact Code Sistemas.
+
+< topic

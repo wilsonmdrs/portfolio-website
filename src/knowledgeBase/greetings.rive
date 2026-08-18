@@ -1,39 +1,37 @@
 ! version = 2.0
 
-  + [*] (@greet)[ *]
-  * <get name> != undefined => {random}Hey <get name>!|Hello <get name>!|Good to see you, <get name>!{/random}
-  - {random}Hey!|Hello!|Hi there!{/random} What's your name?
++ (hi|hey|hello|howdy|yo|good morning|good afternoon|good evening)
+* <get name> != undefined => {random}Hey <get name>!|Hello <get name>!|Good to see you, <get name>!{/random}
+- {random}Hey!|Hello!|Hi there!{/random} What should I call you?
 
-  + [*] my name is * [*]
-  * <formal> == <get name> => We already met, <get name>! How can I help today?
-  - Nice to meet you, <formal>! <set name=<formal>> How can I help you today?
-  
-  + _ *
-  % * your name?
-  @ my name is <formal> <star2>
- 
-  + _
-  % * your name?
-  @ my name is <formal>
++ my name is *
+* <get name> == <formal> => We already know each other, <get name>! How can I help today?
+- Nice to meet you, <formal>. <set name=<formal>> How can I help you today?
 
-  + _ *
-  % * your name?
-  * <formal> == <get name> => We already met, <get name>! How can I help today?
-  - Nice to meet you, <formal> {formal}<star2>{/formal}! <set name=<formal>> How can I help you today?
++ i am *
+* <get name> == <formal> => We already know each other, <get name>! How can I help today?
+- Nice to meet you, <formal>. <set name=<formal>> How can I help you today?
 
-  + [*] call me * [*]
-  - Alright, <formal> — I’ll call you that. <set name=<formal>> What would you like to know?
++ im *
+* <get name> == <formal> => We already know each other, <get name>! How can I help today?
+- Nice to meet you, <formal>. <set name=<formal>> How can I help you today?
 
-  + [*] what is my name [*]
-  * <get name> != undefined => You told me your name is <get name>.
-  - I don’t know yet. Tell me by saying: "my name is Ana".
++ call me *
+* <get name> == <formal> => We already know each other, <get name>! How can I help today?
+- Nice to meet you, <formal>. <set name=<formal>> How can I help you today?
 
-  + [*] (good morning|good afternoon|good evening) [*]
-  * <get name> != undefined => {random}Good {{morning|afternoon|evening}}, <get name>!|Hope you're having a great one, <get name>!{/random}
-  - {random}Good {{morning|afternoon|evening}}!|Hello!{/random}
++ (what is my name|do you know my name|remember my name)
+* <get name> != undefined => You told me your name is <get name>.
+- I do not know it yet. You can say "my name is Ana".
 
-  + [*] (thanks|thank) [*]
-  - You’re welcome{random}!|, happy to help!{/random}
++ (who are you|what are you|what is your name|tell me about yourself)
+- I am Wilson's CV assistant. I can talk about his experience, skills, education, contact details, and more.
 
-  + [*] bye [*]
-  - See you later{random}!|!{/random}
++ (how are you|how are you doing|are you okay)
+- I am doing well and ready to help.
+
++ (thank you|thanks|thx)
+- You are welcome! Happy to help.
+
++ (bye|goodbye|see you later|see ya)
+- See you later!

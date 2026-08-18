@@ -1,12 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { ConversationTurn, KnowledgeBaseSuggestion } from "@/lib/chatHistory";
 
 export function useChat({ userId }: { userId: string }) {
   const startedRef = useRef(false);
   const [pending, setPending] = useState(false);
   const [reply, setReply] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<ConversationTurn[]>([]);
+  const [suggestions, setSuggestions] = useState<KnowledgeBaseSuggestion[]>([]);
 
   const start = useCallback(async () => {
     if (startedRef.current) return true;
@@ -64,6 +67,28 @@ export function useChat({ userId }: { userId: string }) {
     [start, userId],
   );
 
+  const loadHistory = useCallback(async () => {
+    setError(null);
+    try {
+      const res = await fetch(`/api/chat/history?userId=${encodeURIComponent(userId)}`, {
+        cache: "no-store",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+      setHistory(Array.isArray(data.history) ? data.history : []);
+      setSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
+      return {
+        history: Array.isArray(data.history) ? data.history : [],
+        suggestions: Array.isArray(data.suggestions) ? data.suggestions : [],
+      };
+    } catch (e) {
+      console.log(e);
+      setError("Failed to load conversation history");
+      return { history: [], suggestions: [] };
+    }
+  }, [userId]);
+
   useEffect(() => {
     start();
   }, [start]);
@@ -71,9 +96,12 @@ export function useChat({ userId }: { userId: string }) {
   return {
     start, // call once on mount or before first send
     sendMessage, // call to get replies (after start)
+    loadHistory,
     reply, // last reply
     pending, // network in-flight
     error, // last error string
+    history,
+    suggestions,
     started: startedRef.current,
   };
 }
