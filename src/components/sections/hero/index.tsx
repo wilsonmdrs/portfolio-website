@@ -3,12 +3,13 @@ import { Github, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
 import { DownloadCV } from "./downloadCV";
 import { motion } from "motion/react";
+import { ScrollDown } from "@/components/ScrollDown";
 
 export function HeroSection() {
   return (
     <motion.section
       id="hero"
-      className="bg-gray-900 min-h-screen flex flex-col w-full p-6"
+      className="bg-gray-900 min-h-screen flex flex-col w-full p-6 relative"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
@@ -60,26 +61,31 @@ export function HeroSection() {
         transition={{ duration: 0.5, delay: 1.0 }}
       >
         <Link
-          href="#"
+          href="https://www.linkedin.com/in/wilsonmdrs"
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label="Linkedin"
           className="hover:text-primary transition"
         >
           <Linkedin className="h-5 w-5" />
         </Link>
         <Link
-          href="#"
+          href="https://github.com/wilsonmdrs"
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label="Github"
           className="hover:text-primary transition"
         >
           <Github className="h-5 w-5" />
         </Link>
         <Link
-          href="mailto:info@example.com"
+          href="mailto:wilsonmdrs@gmail.com"
           aria-label="Email"
           className="hover:text-primary transition"
         >
           <Mail className="h-5 w-5" />
         </Link>
+        {/* <ScrollDown /> */}
       </motion.div>
     </motion.section>
   );
