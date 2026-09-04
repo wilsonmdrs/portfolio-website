@@ -2,8 +2,27 @@
 
 > topic fallback includes cv
 
+// Tratamento de Sentenças Desconhecidas (POP-AKR-003), adapted: a single
+// flat unknownStreak counts consecutive unrecognized messages (reset by
+// setintent in begin.rive on any real match — see the comment there for
+// why this is flat instead of per-botIntention like Akira's ctrlU<...>).
+//
+// First miss priority: (1) a custom per-intention hint if userIntention
+// has one defined (unknownhint_<userIntention> in begin.rive) — for cases
+// where the bot was expecting input in a specific format, e.g. asking for
+// the visitor's name, and "still asking about your name?" wouldn't
+// actually tell them what to type; (2) otherwise the generic contextual
+// "still asking about <botIntention>?" fallback.
+//
+// Second+ consecutive miss: repeating that clarifying question isn't
+// working, so drop the topic framing and fall back to the plain generic
+// menu instead ("Muda de assunto" in the Fluxograma) — same text as the
+// no-context default, reached here on purpose rather than by omission.
 + *
-* <get name> != undefined => I did not fully get that, <get name>. You can ask about Wilson's summary, contact details, skills, languages, education, or experience at Smart Debrief, Moomenti, Red IT, or Exact Code Sistemas.
-- I did not quite follow. You can ask about Wilson's summary, contact details, skills, languages, education, or experience at Smart Debrief, Moomenti, Red IT, or Exact Code Sistemas.
+* <get unknownStreak> >= 1 => <add unknownStreak=1>I did not quite follow. You can ask about Wilson's summary, contact details, skills, languages, education, or experience at Smart Debrief, Moomenti, Mobiweb, Red IT, or Exact Code Sistemas.
+* <bot unknownhint_<get userIntention>> != undefined => <add unknownStreak=1><bot unknownhint_<get userIntention>>
+* <get botIntention> != undefined => <add unknownStreak=1>Sorry, I did not quite follow — still asking about <get botIntention>? You can also ask about Wilson's summary, contact details, skills, languages, education, or experience.
+* <get name> != undefined => <add unknownStreak=1>I did not fully get that, <get name>. You can ask about Wilson's summary, contact details, skills, languages, education, or experience at Smart Debrief, Moomenti, Mobiweb, Red IT, or Exact Code Sistemas.
+- <add unknownStreak=1>I did not quite follow. You can ask about Wilson's summary, contact details, skills, languages, education, or experience at Smart Debrief, Moomenti, Mobiweb, Red IT, or Exact Code Sistemas.
 
 < topic

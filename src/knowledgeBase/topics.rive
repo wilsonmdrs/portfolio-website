@@ -1,10 +1,10 @@
 ! version = 2.0
 
 + (cv|resume|about wilson|about my cv|wilson cv)
-- Sure, let's talk about Wilson's CV. {topic=cv}
+- Sure, let's talk about Wilson's CV. Ask about his summary, skills, languages, education, or experience.
 
-+ (chat|small talk|conversation|talk to me)
-- Sure, let's chat. {topic=smalltalk}
++ [lets] (chat|small talk|conversation|talk to me)
+- Sure, let's chat. Ask me anything, or say "joke" for a laugh.
 
 + (reset|start over|go home|home)
 - Resetting our conversation. {topic=random}

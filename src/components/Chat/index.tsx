@@ -13,6 +13,16 @@ type Message = {
   content: string;
 };
 
+type ChatTurn = {
+  id: string;
+  message: string;
+  reply: string;
+};
+
+type ChatHistory = {
+  history: ChatTurn[];
+};
+
 export const Chat = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
@@ -29,7 +39,7 @@ export const Chat = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const chatRef = useRef<HTMLDivElement | null>(null);
 
-  const { sendMessage, loadHistory } = useChat({
+  const { sendMessage, loadHistory, provider } = useChat({
     userId,
   });
 
@@ -63,7 +73,7 @@ export const Chat = () => {
       .then(({ history }) => {
         if (history.length === 0) return;
         setMessages(
-          history.flatMap((turn) => [
+          history.flatMap((turn: ChatTurn) => [
             {
               id: `${turn.id}-user`,
               user: "wm/visitor",
@@ -164,7 +174,12 @@ export const Chat = () => {
             <div className="mb-2 flex gap-2 rounded-md bg-primary/20 p-2 text-sm text-white">
               <p className="font-bold text-white">System:</p>
               <p className="text-white">
-                Welcome to Wilson Medeiros portfolio chatbot (no generative AI).
+                Welcome to Wilson Medeiros portfolio chatbot
+                {provider === "browser-ai"
+                  ? " (running on your browser's on-device AI)."
+                  : provider === "groq"
+                    ? " (powered by Groq AI)."
+                    : " (no generative AI)."}
               </p>
             </div>
 

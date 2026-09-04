@@ -1,31 +1,68 @@
 ! version = 2.0
 
 + (hi|hey|hello|howdy|yo|good morning|good afternoon|good evening)
-* <get name> != undefined => {random}Hey <get name>!|Hello <get name>!|Good to see you, <get name>!{/random}
-- {random}Hey!|Hello!|Hi there!{/random} What should I call you?
+* <get name> != undefined => {@ ctrlintent greet}{random}Hey <get name>!|Hello <get name>!|Good to see you, <get name>!{/random}
+* <get currentSession> == development => {@ ctrlintent greet}Hey! Feel free to keep asking about Wilson's CV.
+* <get currentSession> == closing => {@ ctrlintent greet}Hey! Feel free to keep asking about Wilson's CV.
+* <get ctrl_greet> >= 1 => {@ ctrlintent greet}{random}Hey again!|Still here!{/random} You can tell me your name, or just ask about Wilson's CV.
+- {@ ctrlintent greet}<set unknownStreak=0><set userIntention=askname><set botIntention=<bot intent_askname>>{random}Hey!|Hello!|Hi there!{/random} What should I call you?
 
-+ my name is *
-* <get name> == <formal> => We already know each other, <get name>! How can I help today?
-- Nice to meet you, <formal>. <set name=<formal>> How can I help you today?
++ (my name is|it is|i am|im|you can call me|call me) *
+* <get name> == <formal> => <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>We already know each other, <get name>! How can I help today?
+- <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>Nice to meet you, {formal}<star2>{/formal}.<set name={formal}<star2>{/formal}> How can I help you today?
 
-+ i am *
-* <get name> == <formal> => We already know each other, <get name>! How can I help today?
-- Nice to meet you, <formal>. <set name=<formal>> How can I help you today?
+// % (Previous) block: catches a BARE name reply — just "Ana", no "my name
+// is" prefix — that the trigger above can't, since it requires one of
+// those lead-in phrases. Scoped to the bot's last line asking for a name
+// (either phrasing: the initial ask or the repeat-greeting nudge), so it
+// only activates in that exact context — RiveScript checks % matches
+// before any normal trigger, so an unscoped version of this would
+// swallow any single-word message (confirmed by testing: it captured
+// "skills" as if it were a name). Rather than exclude every existing
+// single-word CV trigger (fragile, needs updating every time one's
+// added), it asks for confirmation instead — safe regardless of whether
+// the word happens to collide with real vocabulary.
+//
+// [*] not *, on both sides: * requires 1+ trailing characters, but "...
+// what should i call you" has nothing after it once the "?" is stripped
+// — a bare * there never matches (confirmed by testing: it silently
+// fell through to the generic fallback). [*] allows zero-width, so it
+// still matches when there's nothing left to consume.
+//
+// Greeting words are excluded and redirected back to the real trigger
+// (<get ctrl_greet> already handles a repeat "hi" with its own nudge) —
+// otherwise a second "hi" gets treated as a candidate name instead of a
+// greeting (confirmed by testing: "Is Hi your name?").
++ _
+% [*] (what should i call you|you can tell me your name) [*]
+* <star> == hi => {@ <star>}
+* <star> == hey => {@ <star>}
+* <star> == hello => {@ <star>}
+* <star> == howdy => {@ <star>}
+* <star> == yo => {@ <star>}
+- <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star>{/formal}>Is <get pendingname> your name?
 
-+ im *
-* <get name> == <formal> => We already know each other, <get name>! How can I help today?
-- Nice to meet you, <formal>. <set name=<formal>> How can I help you today?
+// {formal} is regex-processed before <set>/<get> tags resolve, so
+// {formal}<get pendingname>{/formal} would format the literal text
+// "<get pendingname>" instead of its value (confirmed by testing — it
+// printed "undefined"). <star> is safe inside {formal} because it's
+// substituted earlier, before {formal} runs — so pendingname is
+// formatted once at capture time above, then reused plain below.
++ (yes|yeah|yep|correct|thats right|that is right|right)
+% is * your name
+- <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>Nice to meet you, <get pendingname>.<set name=<get pendingname>> How can I help you today?
 
-+ call me *
-* <get name> == <formal> => We already know each other, <get name>! How can I help today?
-- Nice to meet you, <formal>. <set name=<formal>> How can I help you today?
++ (no|nope|not quite|thats not right|that is not right|wrong)
+% is * your name
+- <set unknownStreak=0><set userIntention=askname><set botIntention=<bot intent_askname>>Got it. Please tell me your name like this: "My name is Ana".
 
 + (what is my name|do you know my name|remember my name)
 * <get name> != undefined => You told me your name is <get name>.
 - I do not know it yet. You can say "my name is Ana".
 
-+ (who are you|what are you|what is your name|tell me about yourself)
-- I am Wilson's CV assistant. I can talk about his experience, skills, education, contact details, and more.
++ (who are you|what are you|what is your name|your name|tell me about yourself)
+* <get ctrl_botidentity> >= 1 => {@ setintent botidentity}{@ ctrlintent botidentity}Still me — Wilson's CV assistant. Ask me anything about his experience, skills, education, or contact details.
+- {@ setintent botidentity}{@ ctrlintent botidentity}I am Wilson's CV assistant. I can talk about his experience, skills, education, contact details, and more.
 
 + (how are you|how are you doing|are you okay)
 - I am doing well and ready to help.
@@ -34,4 +71,4 @@
 - You are welcome! Happy to help.
 
 + (bye|goodbye|see you later|see ya)
-- See you later!
+- <set currentSession=closing><set botIntention=undefined>See you later!

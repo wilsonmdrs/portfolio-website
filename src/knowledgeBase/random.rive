@@ -1,6 +1,6 @@
 ! version = 2.0
 
-> topic random includes fallback
+> topic random includes fallback smalltalk
 
 + (help|what can you do|what do you know|options|menu)
 - You can ask about Wilson's summary, contact details, skills, languages, education, or experience.

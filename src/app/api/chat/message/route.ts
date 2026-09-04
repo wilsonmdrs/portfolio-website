@@ -1,6 +1,8 @@
 // src/app/api/chat/message/route.ts
 import { NextResponse } from "next/server";
 import { ask } from "@/lib/riveBot";
+import { ask as askGroq } from "@/lib/groqBot";
+import { CHAT_PROVIDER } from "@/lib/chatConfig";
 
 type MsgBody = { userId?: string; message?: string };
 
@@ -21,7 +23,10 @@ export async function POST(req: Request) {
         { status: 400 },
       );
 
-    const reply = await ask(message, userId);
+    const reply =
+      CHAT_PROVIDER === "groq"
+        ? await askGroq(message, userId)
+        : await ask(message, userId);
     return NextResponse.json({ reply }, { status: 200 });
   } catch (error) {
     if (!!error && typeof error === "object" && "message" in error) {

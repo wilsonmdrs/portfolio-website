@@ -2,70 +2,96 @@
 
 > topic cv
 
-+ (who is wilson|about wilson|tell me about wilson|who are you|what is your cv summary|summary|profile|professional summary|about yourself)
-- <bot cv_summary>
++ (who is wilson|about wilson|tell me about wilson|what is your cv summary|summary|profile|professional summary|about yourself)
+* <get ctrl_summary> >= 1 => {@ setintent summary}{@ ctrlintent summary}You already asked about <bot intent_summary> — is there something else about Wilson you would like to know?
+- {@ setintent summary}{@ ctrlintent summary}<bot cv_summary>
 
-+ (what is your name|your name|who is wilson medeiros|who is wilson souza de medeiros junior)
-- I am <bot cv_name>.
++ (wilsons name|his full name|full name|who is wilson medeiros|who is wilson souza de medeiros junior)
+* <get ctrl_name> >= 1 => {@ setintent name}{@ ctrlintent name}You already asked about <bot intent_name> — is there something else about Wilson you would like to know?
+- {@ setintent name}{@ ctrlintent name}Wilson's full name is <bot cv_name>.
 
 + (where are you from|where do you live|location|based in|where is wilson based)
-- <bot cv_location>
+* <get ctrl_location> >= 1 => {@ setintent location}{@ ctrlintent location}You already asked about <bot intent_location> — is there something else about Wilson you would like to know?
+- {@ setintent location}{@ ctrlintent location}Wilson is based in <bot cv_location>.
 
 + (how can i contact you|contact|phone|email|linkedin|linkedin profile|contact details)
-- Phone: <bot cv_phone>. Email: <bot cv_email>. LinkedIn: <bot cv_linkedin>.
+* <get ctrl_contact> >= 1 => {@ setintent contact}{@ ctrlintent contact}You already asked about <bot intent_contact> — is there something else about Wilson you would like to know?
+- {@ setintent contact}{@ ctrlintent contact}Wilson's phone: <bot cv_phone>. Email: <bot cv_email>. LinkedIn: <bot cv_linkedin>.
 
-+ (what are your skills|skills|skill set|tech stack|technologies|stack|what do you know)
-- <bot cv_skills>
++ (what are your skills|skill set|what do you know|@skillswords)
+* <get ctrl_skills> >= 1 => {@ setintent skills}{@ ctrlintent skills}You already asked about <bot intent_skills> — is there something else about Wilson you would like to know?
+- {@ setintent skills}{@ ctrlintent skills}Wilson's skills include <bot cv_skills>.
 
-+ (what languages do you speak|languages|language)
-- <bot cv_languages>
++ (what languages do you speak|@langwords)
+* <get ctrl_languages> >= 1 => {@ setintent languages}{@ ctrlintent languages}You already asked about <bot intent_languages> — is there something else about Wilson you would like to know?
+- {@ setintent languages}{@ ctrlintent languages}Wilson speaks <bot cv_languages>.
 
-+ (education|degree|university|college|graduation|school)
-- <bot cv_education>
++ (what is your education|@eduwords|school)
+* <get ctrl_education> >= 1 => {@ setintent education}{@ ctrlintent education}You already asked about <bot intent_education> — is there something else about Wilson you would like to know?
+- {@ setintent education}{@ ctrlintent education}Wilson holds a <bot cv_education>.
 
-+ (what is your experience|experience|work experience|career|employment history|professional experience)
-- <bot cv_roles>
++ (what is your experience|career|employment history|professional experience|@expwords)
+* <get ctrl_experience> >= 1 => {@ setintent experience}{@ ctrlintent experience}You already asked about <bot intent_experience> — is there something else about Wilson you would like to know?
+- {@ setintent experience}{@ ctrlintent experience}Wilson's experience: <bot cv_roles>
+
++ (what companies have you worked for|which companies have you worked for|what companies|which companies|employers|@companies)
+* <get ctrl_companies> >= 1 => {@ setintent companies}{@ ctrlintent companies}You already asked about <bot intent_companies> — is there something else about Wilson you would like to know?
+- {@ setintent companies}{@ ctrlintent companies}Wilson has worked at: <bot cv_roles>
 
 + (tell me about smart debrief|what did you do at smart debrief|experience at smart debrief)
-- At Smart Debrief, I developed core frontend features for audio upload, playback, and meeting processing workflows. I also integrated AI transcription and summarization outputs into a clear interface and improved performance for large audio files and long transcripts.
+* <get ctrl_smartdebrief> >= 1 => {@ setintent smartdebrief}{@ ctrlintent smartdebrief}You already asked about <bot intent_smartdebrief> — is there something else about Wilson you would like to know?
+- {@ setintent smartdebrief}{@ ctrlintent smartdebrief}At Smart Debrief, Wilson developed core frontend features for audio upload, playback, and meeting processing workflows. He also integrated AI transcription and summarization outputs into a clear interface and improved performance for large audio files and long transcripts.
 
 + (tell me about moomenti|what did you do at moomenti|experience at moomenti)
-- At Moomenti, I delivered robust fixes, improved architecture, improved CI/CD, and wrote documentation to speed up onboarding.
+* <get ctrl_moomenti> >= 1 => {@ setintent moomenti}{@ ctrlintent moomenti}You already asked about <bot intent_moomenti> — is there something else about Wilson you would like to know?
+- {@ setintent moomenti}{@ ctrlintent moomenti}At Moomenti, Wilson delivered robust fixes, improved architecture, improved CI/CD, and wrote documentation to speed up onboarding.
 
 + (tell me about red it|what did you do at red it|experience at red it)
-- At Red IT, I built interfaces with design patterns, worked in a DevOps environment, wrote testing documentation for React components with Jest, helped junior frontend developers, and fixed bugs with prevention measures.
+* <get ctrl_redit> >= 1 => {@ setintent redit}{@ ctrlintent redit}You already asked about <bot intent_redit> — is there something else about Wilson you would like to know?
+- {@ setintent redit}{@ ctrlintent redit}At Red IT, Wilson built interfaces with design patterns, worked in a DevOps environment, wrote testing documentation for React components with Jest, helped junior frontend developers, and fixed bugs with prevention measures.
 
 + (tell me about exact code sistemas|what did you do at exact code sistemas|experience at exact code sistemas)
-- At Exact Code Sistemas, I planned, developed, tested, deployed, and maintained React web apps and React Native mobile apps, built RESTful APIs with Node.js and Python, handled troubleshooting, and created knowledge bases for virtual assistants.
+* <get ctrl_exactcode> >= 1 => {@ setintent exactcode}{@ ctrlintent exactcode}You already asked about <bot intent_exactcode> — is there something else about Wilson you would like to know?
+- {@ setintent exactcode}{@ ctrlintent exactcode}At Exact Code Sistemas, Wilson planned, developed, tested, deployed, and maintained React web apps and React Native mobile apps, built RESTful APIs with Node.js and Python, handled troubleshooting, and created knowledge bases for virtual assistants.
+
++ (tell me about mobiweb|what did you do at mobiweb|experience at mobiweb)
+* <get ctrl_mobiweb> >= 1 => {@ setintent mobiweb}{@ ctrlintent mobiweb}You already asked about <bot intent_mobiweb> — is there something else about Wilson you would like to know?
+- {@ setintent mobiweb}{@ ctrlintent mobiweb}At Mobiweb, Wilson worked as Senior Frontend Developer and App Manager, leading React Native mobile architecture and managing the iOS and Android release process.
 
 + (tell me about your frontend experience|frontend|frontend developer|react)
-- I have strong frontend experience with React, React Native, Next.js, TypeScript, JavaScript, and modern component-based architecture.
+* <get ctrl_frontend> >= 1 => {@ setintent frontend}{@ ctrlintent frontend}You already asked about <bot intent_frontend> — is there something else about Wilson you would like to know?
+- {@ setintent frontend}{@ ctrlintent frontend}Wilson has strong frontend experience with React, React Native, Next.js, TypeScript, JavaScript, and modern component-based architecture.
 
 + (tell me about mobile development|mobile|react native|app manager|ios|android)
-- I led React Native mobile architecture and managed the mobile release process for iOS and Android as App Manager.
+* <get ctrl_mobile> >= 1 => {@ setintent mobile}{@ ctrlintent mobile}You already asked about <bot intent_mobile> — is there something else about Wilson you would like to know?
+- {@ setintent mobile}{@ ctrlintent mobile}Wilson led React Native mobile architecture and managed the mobile release process for iOS and Android as App Manager.
 
 + (tell me about testing|tests|unit tests|integration tests|jest|react testing library)
-- I championed test strategy and built unit and integration tests with Jest and React Testing Library to reduce regressions.
+* <get ctrl_testing> >= 1 => {@ setintent testing}{@ ctrlintent testing}You already asked about <bot intent_testing> — is there something else about Wilson you would like to know?
+- {@ setintent testing}{@ ctrlintent testing}Wilson championed test strategy and built unit and integration tests with Jest and React Testing Library to reduce regressions.
 
 + (tell me about design|ui|ux|figma|adobe xd|styled components|sass|tailwind)
-- I developed interfaces based on design patterns and worked with Figma, Adobe XD, Styled Components, SASS, and Tailwind.
+* <get ctrl_design> >= 1 => {@ setintent design}{@ ctrlintent design}You already asked about <bot intent_design> — is there something else about Wilson you would like to know?
+- {@ setintent design}{@ ctrlintent design}Wilson developed interfaces based on design patterns and worked with Figma, Adobe XD, Styled Components, SASS, and Tailwind.
 
 + (tell me about backend|api|node|python|rest|restful api)
-- I built RESTful APIs with Node.js and Python and collaborated closely with backend teams to keep data structures and processing pipelines consistent.
+* <get ctrl_backend> >= 1 => {@ setintent backend}{@ ctrlintent backend}You already asked about <bot intent_backend> — is there something else about Wilson you would like to know?
+- {@ setintent backend}{@ ctrlintent backend}Wilson built RESTful APIs with Node.js and Python and collaborated closely with backend teams to keep data structures and processing pipelines consistent.
 
 + (tell me about ai|artificial intelligence|transcription|summarization|knowledge base)
-- I worked on AI-driven transcription and summarization interfaces and also developed knowledge bases for virtual assistants.
+* <get ctrl_ai> >= 1 => {@ setintent ai}{@ ctrlintent ai}You already asked about <bot intent_ai> — is there something else about Wilson you would like to know?
+- {@ setintent ai}{@ ctrlintent ai}Wilson worked on AI-driven transcription and summarization interfaces and also developed knowledge bases for virtual assistants.
 
 + (tell me about leadership|lead|manager|mentoring|code review|team)
-- I conducted code reviews, assisted junior frontend developers, collaborated with design, backend, QA, and product teams, and helped define technical solutions and roadmaps.
+* <get ctrl_leadership> >= 1 => {@ setintent leadership}{@ ctrlintent leadership}You already asked about <bot intent_leadership> — is there something else about Wilson you would like to know?
+- {@ setintent leadership}{@ ctrlintent leadership}Wilson conducted code reviews, assisted junior frontend developers, collaborated with design, backend, QA, and product teams, and helped define technical solutions and roadmaps.
 
 + (what tools do you use|tools|storybook|react query|tailwind|jest|figma|adobe xd)
-- Tools and libraries I use include Storybook, React Query, Tailwind, Jest, React Testing Library, Figma, and Adobe XD.
+* <get ctrl_tools> >= 1 => {@ setintent tools}{@ ctrlintent tools}You already asked about <bot intent_tools> — is there something else about Wilson you would like to know?
+- {@ setintent tools}{@ ctrlintent tools}Tools and libraries Wilson uses include Storybook, React Query, Tailwind, Jest, React Testing Library, Figma, and Adobe XD.
 
 + (can you summarize your career|career summary|tell me more|more details)
-- I started as a freelancer, moved through software engineering and frontend roles, and now focus on frontend and mobile development with strong attention to quality, performance, and maintainability.
-
-+ *
-- I did not quite follow. You can ask about Wilson's summary, contact details, skills, languages, education, or experience at Smart Debrief, Moomenti, Red IT, or Exact Code Sistemas.
+* <get ctrl_careersummary> >= 1 => {@ setintent careersummary}{@ ctrlintent careersummary}You already asked about <bot intent_careersummary> — is there something else about Wilson you would like to know?
+- {@ setintent careersummary}{@ ctrlintent careersummary}Wilson started as a freelancer, moved through software engineering and frontend roles, and now focuses on frontend and mobile development with strong attention to quality, performance, and maintainability.
 
 < topic
