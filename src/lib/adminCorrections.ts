@@ -69,6 +69,28 @@ export type Correction = {
 
 export type NewCorrectionInput = Omit<Correction, "id" | "createdAt">;
 
+/**
+ * Every read-modify-write against the file goes through this in-process
+ * lock (a simple promise-chain mutex — this is a single Node process, so
+ * this is sufficient, no cross-process file locking needed). Without it,
+ * two nearly-simultaneous requests (e.g. two admin tabs both loading the
+ * Corrections list, each triggering a replay pass) can each read the file,
+ * mutate their own in-memory copy, and write back — the second write can
+ * land mid-way through the first `fs.writeFile()` call, interleaving their
+ * output into invalid JSON. Confirmed this happening in practice: a
+ * corrupted file showed a `]` from one write immediately followed by a
+ * timestamp fragment from a different write.
+ */
+let queue: Promise<unknown> = Promise.resolve();
+function withLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = queue.then(fn, fn);
+  queue = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 async function readAll(): Promise<Correction[]> {
   try {
     const raw = await fs.readFile(DATA_FILE, "utf8");
@@ -85,35 +107,39 @@ async function writeAll(entries: Correction[]): Promise<void> {
   await fs.writeFile(DATA_FILE, JSON.stringify(entries, null, 2), "utf8");
 }
 
-export async function listCorrections(): Promise<Correction[]> {
-  return readAll();
+export function listCorrections(): Promise<Correction[]> {
+  return withLock(() => readAll());
 }
 
-export async function appendCorrection(input: NewCorrectionInput): Promise<Correction> {
-  const entries = await readAll();
-  const entry: Correction = {
-    ...input,
-    id: randomUUID(),
-    createdAt: new Date().toISOString(),
-  };
-  entries.push(entry);
-  await writeAll(entries);
-  return entry;
+export function appendCorrection(input: NewCorrectionInput): Promise<Correction> {
+  return withLock(async () => {
+    const entries = await readAll();
+    const entry: Correction = {
+      ...input,
+      id: randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+    entries.push(entry);
+    await writeAll(entries);
+    return entry;
+  });
 }
 
-export async function updateCorrection(
+export function updateCorrection(
   id: string,
   patch: Partial<
     Pick<Correction, "instructions" | "suggestion" | "approved" | "reviewNotes" | "replay">
   >,
 ): Promise<Correction | null> {
-  const entries = await readAll();
-  const index = entries.findIndex((entry) => entry.id === id);
-  if (index === -1) return null;
+  return withLock(async () => {
+    const entries = await readAll();
+    const index = entries.findIndex((entry) => entry.id === id);
+    if (index === -1) return null;
 
-  entries[index] = { ...entries[index], ...patch };
-  await writeAll(entries);
-  return entries[index];
+    entries[index] = { ...entries[index], ...patch };
+    await writeAll(entries);
+    return entries[index];
+  });
 }
 
 /**
@@ -142,25 +168,33 @@ function extractPriorInputs(vars: Record<string, unknown>): string[] {
  * on every load because riveBot.ts's getBot() re-checks the KB's mtime
  * signature on every call, so this always sees the latest .rive content.
  */
-export async function replayApprovedCorrections(): Promise<Correction[]> {
-  const entries = await readAll();
-  const approved = entries.filter((entry) => entry.approved);
+export function replayApprovedCorrections(): Promise<Correction[]> {
+  return withLock(async () => {
+    const entries = await readAll();
 
-  for (const entry of approved) {
-    const priorInputs = extractPriorInputs(entry.vars);
-    const { reply, vars } = await replayConversation(priorInputs, entry.conversation.message);
-    await updateCorrection(entry.id, {
-      replay: { reply, vars, repliedAt: new Date().toISOString() },
-    });
-  }
+    // One read, mutate the in-memory array across the whole loop, one
+    // write at the end — not a read+write per entry (which is both
+    // needlessly slow and was itself a source of the same interleaving
+    // risk this lock exists to prevent, if this function's own iterations
+    // were ever the two racing writers).
+    for (const entry of entries) {
+      if (!entry.approved) continue;
+      const priorInputs = extractPriorInputs(entry.vars);
+      const { reply, vars } = await replayConversation(priorInputs, entry.conversation.message);
+      entry.replay = { reply, vars, repliedAt: new Date().toISOString() };
+    }
 
-  return readAll();
+    await writeAll(entries);
+    return entries;
+  });
 }
 
-export async function deleteCorrection(id: string): Promise<boolean> {
-  const entries = await readAll();
-  const next = entries.filter((entry) => entry.id !== id);
-  if (next.length === entries.length) return false;
-  await writeAll(next);
-  return true;
+export function deleteCorrection(id: string): Promise<boolean> {
+  return withLock(async () => {
+    const entries = await readAll();
+    const next = entries.filter((entry) => entry.id !== id);
+    if (next.length === entries.length) return false;
+    await writeAll(next);
+    return true;
+  });
 }

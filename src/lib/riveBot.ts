@@ -5,6 +5,8 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { recordConversationTurn } from "./chatHistory";
 import { preProcessEn } from "./textPreps.en";
+import { classifyYesNoMaybe, findSemanticMatch } from "./semanticFallback";
+import { correctTypos } from "./typoCorrection";
 
 const KB_ROOT = path.join(process.cwd(), "src", "knowledgeBase");
 
@@ -245,6 +247,46 @@ export async function replayConversation(
   return { reply, vars };
 }
 
+/**
+ * The RiveScript uservar snapshot stores `__history__.input` most-recent-
+ * first, already normalized, padded with the literal string "undefined"
+ * for unused slots, and index 0 is the message that was just asked. This
+ * pulls out everything BEFORE it, oldest first — the same technique
+ * adminCorrections.ts uses to rebuild `%`-Previous context for a replay.
+ * Duplicated here rather than imported from adminCorrections.ts to avoid
+ * a circular import (that module already imports from this one).
+ */
+function extractPriorInputsFromVars(vars: Record<string, unknown>): string[] {
+  const history = vars.__history__ as { input?: unknown } | undefined;
+  const input = Array.isArray(history?.input) ? history.input : [];
+  return input
+    .slice(1)
+    .filter((entry): entry is string => typeof entry === "string" && entry !== "undefined")
+    .reverse();
+}
+
+const SEMANTIC_PENDING_VAR = "semanticPendingPhrase";
+
+async function getPendingSemanticPhrase(bot: RiveScript, sessionId: string): Promise<string | null> {
+  const vars = await bot.getUservars(sessionId);
+  const value = vars[SEMANTIC_PENDING_VAR];
+  return typeof value === "string" && value !== "undefined" ? value : null;
+}
+
+async function finish(
+  bot: RiveScript,
+  sessionId: string,
+  userId: string,
+  message: string,
+  normalizedMessage: string,
+  reply: string,
+): Promise<string> {
+  await logInteractionVars(bot, sessionId);
+  recordConversationTurn({ userId, message, normalizedMessage, reply });
+  console.log("Reply", reply);
+  return reply;
+}
+
 /** Ask a question on behalf of a started user session */
 
 export async function ask(message: string, userId: string): Promise<string> {
@@ -262,20 +304,94 @@ export async function ask(message: string, userId: string): Promise<string> {
 
   const bot = await getBot();
 
-  // 2) (Optional) Store normalized text for debugging/introspection
-  // try {
-  //   await bot.setUservar(sessionId, "_norm", prep.normalized);
-  // } catch {}
+  // Semantic fallback, part 1 of 2: resolve a pending "did you mean to ask
+  // about X?" confirmation from the PREVIOUS turn, entirely in JS — see
+  // semanticFallback.ts's classifyYesNoMaybe() comment for why this isn't
+  // a RiveScript %-Previous trigger.
+  const pendingPhrase = await getPendingSemanticPhrase(bot, sessionId);
+  if (pendingPhrase) {
+    await bot.setUservar(sessionId, SEMANTIC_PENDING_VAR, "undefined");
+    const answer = classifyYesNoMaybe(prep.normalized);
+    if (answer === "yes") {
+      const reply = await bot.reply(sessionId, pendingPhrase);
+      return finish(bot, sessionId, userId, message, prep.normalized, reply);
+    }
+    if (answer === "no") {
+      const reply =
+        "No problem! Feel free to ask about Wilson's summary, skills, education, experience, or contact details.";
+      return finish(bot, sessionId, userId, message, prep.normalized, reply);
+    }
+    if (answer === "maybe") {
+      const reply = "No worries — take your time. Ask whenever you are ready.";
+      return finish(bot, sessionId, userId, message, prep.normalized, reply);
+    }
+    // Not a recognizable yes/no/maybe — treat this message normally below,
+    // exactly as if there had been no pending confirmation at all.
+  }
+
+  const varsBefore = await bot.getUservars(sessionId);
+  const streakBefore = Number(varsBefore.unknownStreak ?? 0);
 
   // 3) Ask RiveScript with normalized English, scoped to this session
-  const reply = await bot.reply(sessionId, prep.normalized);
-  await logInteractionVars(bot, sessionId);
-  recordConversationTurn({
-    userId,
-    message,
-    normalizedMessage: prep.normalized,
-    reply,
-  });
-  console.log("Reply", reply);
-  return reply;
+  let reply = await bot.reply(sessionId, prep.normalized);
+
+  // Both fallbacks below only ever run when the message hit unknown.rive's
+  // catch-all (unknownStreak went up) — a message that already matched a
+  // real trigger never touches either, so normal traffic pays zero extra
+  // latency/cost.
+  const varsAfter = await bot.getUservars(sessionId);
+  const hitCatchAll = Number(varsAfter.unknownStreak ?? 0) > streakBefore;
+  if (hitCatchAll) {
+    // Typo correction, tried first: unlike semantic fallback below, this
+    // never guesses at topic — it only proposes a spelling fix, then
+    // VERIFIES that fix actually produces a real trigger match (not the
+    // catch-all again) before using it, via a throwaway replay session so
+    // a failed attempt never touches the real session's unknownStreak/
+    // history. See typoCorrection.ts for why this needs that
+    // verification step (a masked-LM correction can still be wrong) and
+    // why it can't just retry bot.reply() directly on the live session.
+    let typoFixed = false;
+    try {
+      const typoResult = await correctTypos(message);
+      if (typoResult.changed) {
+        const priorInputs = extractPriorInputsFromVars(varsAfter);
+        const { vars: testVars } = await replayConversation(priorInputs, typoResult.corrected);
+        if (Number(testVars.unknownStreak ?? 0) === 0) {
+          const correctedPrep = preProcessEn(typoResult.corrected, { expandContractions: true });
+          reply = await bot.reply(sessionId, correctedPrep.normalized);
+          typoFixed = true;
+          console.log(
+            `[riveBot] typo correction: "${message}" -> "${typoResult.corrected}" (${typoResult.corrections
+              .map((c) => `${c.from}->${c.to}`)
+              .join(", ")})`,
+          );
+        }
+      }
+    } catch (err) {
+      console.log("[riveBot] typo correction lookup failed, continuing without it", err);
+    }
+
+    // Semantic fallback: only tried if typo correction didn't already fix
+    // it. See semanticFallback.ts for why this asks for confirmation
+    // instead of answering the semantic match directly (empirically, the
+    // top match alone isn't reliable enough).
+    if (!typoFixed) {
+      try {
+        const match = await findSemanticMatch(prep.normalized);
+        if (match) {
+          console.log(
+            `[riveBot] semantic fallback: "${prep.normalized}" -> ${match.key} (score=${match.score.toFixed(3)})`,
+          );
+          await bot.setUservar(sessionId, SEMANTIC_PENDING_VAR, match.phrase);
+          reply = `Did you mean to ask about "${match.phrase}"? You can say yes or no.`;
+        }
+      } catch (err) {
+        // A local model failure must never break the chat — fall through
+        // to the original catch-all reply, exactly like before this feature existed.
+        console.log("[riveBot] semantic fallback lookup failed, using generic fallback", err);
+      }
+    }
+  }
+
+  return finish(bot, sessionId, userId, message, prep.normalized, reply);
 }
