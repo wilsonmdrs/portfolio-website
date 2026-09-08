@@ -7,9 +7,27 @@
 * <get ctrl_greet> >= 1 => {@ ctrlintent greet}{random}Hey again!|Still here!{/random} You can tell me your name, or just ask about Wilson's CV.
 - {@ ctrlintent greet}<set unknownStreak=0><set userIntention=askname><set botIntention=<bot intent_askname>>{random}Hey!|Hello!|Hi there!{/random} What should I call you?
 
-+ (my name is|it is|i am|im|you can call me|call me) *
+// [actually|really|literally] is optional and consumes a filler word
+// wedged between the lead-in phrase and the actual name ("my name is
+// actually Ana") so the captured star is just the name (+ surname, if
+// given) — not "Actually Ana" (confirmed by testing this was happening
+// before). Also confirmed a name that's literally "Actually" still falls
+// through correctly to the trailing *, since RiveScript backtracks when
+// consuming the optional word would leave nothing for the required *.
++ (my name is|it is|i am|im|you can call me|call me) [actually|really|literally] *
 * <get name> == <formal> => <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>We already know each other, <get name>! How can I help today?
 - <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>Nice to meet you, {formal}<star2>{/formal}.<set name={formal}<star2>{/formal}> How can I help you today?
+
+// Mid-conversation correction ("actually, call me Ana") — the trigger
+// above requires the lead-in phrase at the very start of the message, so
+// a preamble breaks it. Only widened for "call me"/"my name is" (not
+// "i am"/"im" too, which are common enough mid-sentence that a leading
+// wildcard risks false positives) — explicit correction wording instead
+// of a bare leading [*], to keep the match intentional. Same optional
+// filler-word slot as above.
++ (actually|wait|no|sorry) [*] (my name is|call me|you can call me) [actually|really|literally] *
+* <get name> == <formal> => <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>We already know each other, <get name>! How can I help today?
+- <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>Got it, {formal}<star3>{/formal}.<set name={formal}<star3>{/formal}> How can I help you today?
 
 // % (Previous) block: catches a BARE name reply — just "Ana", no "my name
 // is" prefix — that the trigger above can't, since it requires one of
@@ -57,6 +75,14 @@
 * <star1> <star2> == good afternoon => {@ good afternoon}
 * <star1> <star2> == good evening => {@ good evening}
 - <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star1> <star2>{/formal}>Is <get pendingname> your name?
+
+// Same idea again, for a three-word bare name ("Ana Maria Silva"). No
+// known 3-word greeting phrase exists in the greet trigger's array to
+// exclude here (checked), so no redirect conditions needed like the
+// two-word block above.
++ _ _ _
+% [*] (what should i call you|you can tell me your name) [*]
+- <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star1> <star2> <star3>{/formal}>Is <get pendingname> your name?
 
 // {formal} is regex-processed before <set>/<get> tags resolve, so
 // {formal}<get pendingname>{/formal} would format the literal text

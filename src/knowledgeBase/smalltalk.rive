@@ -22,4 +22,16 @@
 + (good to know|ok|okay|got it|alright|understood|sounds good)
 - How can I help you today?
 
+// Hiring/fit question — distinct in tone from a CV-fact question, so it
+// gets its own reply pointing at contact details rather than trying to
+// force it into an existing skills/experience trigger.
++ [*] (@fitwords) [*]
+- Wilson's skills and experience speak for themselves — feel free to ask about his background, or reach out directly at <bot cv_email> or via LinkedIn to talk about fit for your role.
+
+// A complaint about the bot itself, not about Wilson — acknowledge and
+// redirect rather than ignoring it or answering as if it were a CV
+// question.
++ [*] (@botcomplaintwords) [*]
+- Sorry this hasn't been helpful! You can ask directly about Wilson's skills, experience, education, or contact details — or reach him at <bot cv_email>.
+
 < topic

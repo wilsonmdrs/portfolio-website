@@ -1,6 +1,11 @@
 ! version = 2.0
 
-+ (cv|resume|about wilson|about my cv|wilson cv)
+// "about wilson" deliberately not repeated here — cv.rive's summary
+// trigger already lists it verbatim, and an identical bare-alternation
+// item in two different files is a silent tie the sort order happens to
+// resolve in cv.rive's favor (confirmed by testing), which would only
+// get more fragile as more triggers are added. cv.rive owns that phrase.
++ (cv|resume|about my cv|wilson cv)
 - Sure, let's talk about Wilson's CV. Ask about his summary, skills, languages, education, or experience.
 
 // Open-ended "tell me more about Wilson" style phrasing — distinct from
@@ -9,7 +14,8 @@
 // won't match as a substring of a longer sentence. Still loses to that
 // exact trigger for the bare short forms ("about wilson", "tell me about
 // wilson" with nothing else) since RiveScript prefers the more specific,
-// wildcard-free match — confirmed by testing.
+// wildcard-free match — confirmed by testing. That's fine: this trigger
+// exists for the longer, natural-sentence phrasings, not the bare forms.
 + [*] (want to know more about wilson|want to know about wilson|know more about wilson|learn more about wilson|tell me more about wilson|tell me about wilson) [*]
 - {@ setintent wilsonoverview}{@ ctrlintent wilsonoverview}<set pendingtopic=experience>What would you like to know about Wilson? We can start with his experience, what do you think?
 - {@ setintent wilsonoverview}{@ ctrlintent wilsonoverview}<set pendingtopic=skills>What would you like to know about Wilson? We can start with his skills, what do you think?

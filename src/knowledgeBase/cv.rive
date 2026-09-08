@@ -58,23 +58,41 @@
 
 + (tell me about smart debrief|what did you do at smart debrief|experience at smart debrief)
 * <get ctrl_smartdebrief> >= 1 => {@ setintent smartdebrief}{@ ctrlintent smartdebrief}You already asked about <bot intent_smartdebrief> — is there something else about Wilson you would like to know?
-- {@ setintent smartdebrief}{@ ctrlintent smartdebrief}At Smart Debrief, Wilson developed core frontend features for audio upload, playback, and meeting processing workflows. He also integrated AI transcription and summarization outputs into a clear interface and improved performance for large audio files and long transcripts.
+- {@ setintent smartdebrief}{@ ctrlintent smartdebrief}At Smart Debrief, Wilson developed core frontend features for audio upload, playback, and meeting processing workflows. He also integrated AI transcription and summarization outputs into a clear interface and improved performance for large audio files and long transcripts. Want to hear about another company, or a specific skill area?
 
 + (tell me about moomenti|what did you do at moomenti|experience at moomenti)
 * <get ctrl_moomenti> >= 1 => {@ setintent moomenti}{@ ctrlintent moomenti}You already asked about <bot intent_moomenti> — is there something else about Wilson you would like to know?
-- {@ setintent moomenti}{@ ctrlintent moomenti}At Moomenti, Wilson delivered robust fixes, improved architecture, improved CI/CD, and wrote documentation to speed up onboarding.
+- {@ setintent moomenti}{@ ctrlintent moomenti}At Moomenti, Wilson delivered robust fixes, improved architecture, improved CI/CD, and wrote documentation to speed up onboarding. Want to hear about another company, or a specific skill area?
 
 + (tell me about red it|what did you do at red it|experience at red it)
 * <get ctrl_redit> >= 1 => {@ setintent redit}{@ ctrlintent redit}You already asked about <bot intent_redit> — is there something else about Wilson you would like to know?
-- {@ setintent redit}{@ ctrlintent redit}At Red IT, Wilson built interfaces with design patterns, worked in a DevOps environment, wrote testing documentation for React components with Jest, helped junior frontend developers, and fixed bugs with prevention measures.
+- {@ setintent redit}{@ ctrlintent redit}At Red IT, Wilson built interfaces with design patterns, worked in a DevOps environment, wrote testing documentation for React components with Jest, helped junior frontend developers, and fixed bugs with prevention measures. Want to hear about another company, or a specific skill area?
 
 + (tell me about exact code sistemas|what did you do at exact code sistemas|experience at exact code sistemas)
 * <get ctrl_exactcode> >= 1 => {@ setintent exactcode}{@ ctrlintent exactcode}You already asked about <bot intent_exactcode> — is there something else about Wilson you would like to know?
-- {@ setintent exactcode}{@ ctrlintent exactcode}At Exact Code Sistemas, Wilson planned, developed, tested, deployed, and maintained React web apps and React Native mobile apps, built RESTful APIs with Node.js and Python, handled troubleshooting, and created knowledge bases for virtual assistants.
+- {@ setintent exactcode}{@ ctrlintent exactcode}At Exact Code Sistemas, Wilson planned, developed, tested, deployed, and maintained React web apps and React Native mobile apps, built RESTful APIs with Node.js and Python, handled troubleshooting, and created knowledge bases for virtual assistants. Want to hear about another company, or a specific skill area?
 
 + (tell me about mobiweb|what did you do at mobiweb|experience at mobiweb)
 * <get ctrl_mobiweb> >= 1 => {@ setintent mobiweb}{@ ctrlintent mobiweb}You already asked about <bot intent_mobiweb> — is there something else about Wilson you would like to know?
-- {@ setintent mobiweb}{@ ctrlintent mobiweb}At Mobiweb, Wilson worked as Senior Frontend Developer and App Manager, leading React Native mobile architecture and managing the iOS and Android release process.
+- {@ setintent mobiweb}{@ ctrlintent mobiweb}At Mobiweb, Wilson worked as Senior Frontend Developer and App Manager, leading React Native mobile architecture and managing the iOS and Android release process. Want to hear about another company, or a specific skill area?
+
+// % (Previous) block shared by all five company blurbs above — each ends
+// with the identical trailing question, so one set of yes/no/maybe
+// triggers (scoped to that shared tail) covers all of them, same DRY
+// approach as the experiencefollowup block below. "Yes" can't redirect to
+// one specific next fact the way experiencefollowup's does (there isn't
+// a single obvious next company), so it lists the options instead.
++ (@yeswords) [*]
+% [*] another company or a specific skill area [*]
+- <set unknownStreak=0><set userIntention=companyfollowup><set botIntention=<bot intent_companyfollowup>>Sure! You can ask about Smart Debrief, Moomenti, Mobiweb, Red IT, or Exact Code Sistemas, or about a specific skill like frontend, mobile, testing, or AI.
+
++ (@nowords)
+% [*] another company or a specific skill area [*]
+- <set unknownStreak=0><set userIntention=companyfollowup><set botIntention=<bot intent_companyfollowup>>No problem! Let me know if there is anything else you would like to ask about.
+
++ (@maybewords)
+% [*] another company or a specific skill area [*]
+- <set unknownStreak=0><set userIntention=companyfollowup><set botIntention=<bot intent_companyfollowup>>No worries — take your time. Ask whenever you are ready.
 
 + (tell me about your frontend experience|frontend|frontend developer|react)
 * <get ctrl_frontend> >= 1 => {@ setintent frontend}{@ ctrlintent frontend}You already asked about <bot intent_frontend> — is there something else about Wilson you would like to know?

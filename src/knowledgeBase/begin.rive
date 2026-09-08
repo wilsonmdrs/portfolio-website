@@ -17,6 +17,12 @@
 // you can call only Mary" instead of the full captured pendingname.
 ! array nicknamelead = call only|call me|just call me|but call me|you can call me|please call me|rather be called|prefer to be called
 
+// Off-topic/skeptical message handling (smalltalk.rive) — a hiring/fit
+// question and a complaint about the bot itself are different enough in
+// tone to need separate replies, so two arrays rather than one.
+! array fitwords = good fit|hire wilson|should i hire|right for the job|right for this role|worth hiring|good hire
+! array botcomplaintwords = annoying|useless|worthless|dumb bot|stupid bot|not helpful
+
 > begin
   + request
   * <get met> == undefined => <set met=true> {topic=random} {ok}
@@ -65,6 +71,8 @@
 // not via {@ setintent}, since it's a conversational-flow moment like
 // askname/givename/confirmname, not a fresh development-topic answer.
 ! var intent_experiencefollowup = whether to hear about a specific company or area
+// Same pattern, shared by all five company blurbs' trailing question.
+! var intent_companyfollowup = what to ask about next
 // Open-ended "tell me about Wilson" style prompt (topics.rive) — a real
 // intent since the bot asks a follow-up question and needs its own
 // unknownhint if the visitor's next reply doesn't match anything.
@@ -114,6 +122,7 @@
 ! var unknownhint_education = Sorry, I did not quite get that. If you're asking about Wilson's education, try "what is your education?"
 ! var unknownhint_experience = Sorry, I did not quite get that. If you're asking about Wilson's work experience, try "what is your experience?"
 ! var unknownhint_experiencefollowup = Sorry, I did not quite get that. You can say yes or no, or just ask about a specific company like Moomenti or Smart Debrief.
+! var unknownhint_companyfollowup = Sorry, I did not quite get that. You can say yes or no, or just ask about a specific company or skill area.
 ! var unknownhint_wilsonoverview = You can say things like "experience", "skills", "education", or a company name to start.
 ! var unknownhint_wilsonoverviewfollowup = Sorry, I did not quite get that. You can say yes or no, or just ask about a specific topic like skills or education.
 ! var unknownhint_companies = Sorry, I did not quite get that. If you're asking which companies Wilson worked at, try "which companies have you worked for?"
