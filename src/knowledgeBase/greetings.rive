@@ -1,6 +1,6 @@
 ! version = 2.0
 
-+ (hi|hey|hello|howdy|yo|good morning|good afternoon|good evening)
++ [*] (hi|hey|hello|howdy|yo|good morning|good afternoon|good evening) [*]
 * <get name> != undefined => {@ ctrlintent greet}{random}Hey <get name>!|Hello <get name>!|Good to see you, <get name>!{/random}
 * <get currentSession> == development => {@ ctrlintent greet}Hey! Feel free to keep asking about Wilson's CV.
 * <get currentSession> == closing => {@ ctrlintent greet}Hey! Feel free to keep asking about Wilson's CV.
@@ -42,19 +42,50 @@
 * <star> == yo => {@ <star>}
 - <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star>{/formal}>Is <get pendingname> your name?
 
+// Same idea, for a two-word bare name ("Madelaine Kincaid") — `_` above
+// only matches a single word, so a first+last name fell through to the
+// generic name-parse-failure reply (confirmed by testing). Widening the
+// one-word block to `*` was tried and rejected: since %-Previous always
+// wins over normal triggers, it swallowed EVERYTHING said right after
+// "What should I call you?", including "my name is Bob", "call me Bob",
+// and even an unrelated question like "what are your skills" (confirmed
+// by testing — each got wrongly asked "is that your name?"). An exact
+// two-word block avoids that: it only fires for precisely two bare words.
++ _ _
+% [*] (what should i call you|you can tell me your name) [*]
+* <star1> <star2> == good morning => {@ good morning}
+* <star1> <star2> == good afternoon => {@ good afternoon}
+* <star1> <star2> == good evening => {@ good evening}
+- <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star1> <star2>{/formal}>Is <get pendingname> your name?
+
 // {formal} is regex-processed before <set>/<get> tags resolve, so
 // {formal}<get pendingname>{/formal} would format the literal text
 // "<get pendingname>" instead of its value (confirmed by testing — it
 // printed "undefined"). <star> is safe inside {formal} because it's
 // substituted earlier, before {formal} runs — so pendingname is
 // formatted once at capture time above, then reused plain below.
-+ (yes|yeah|yep|correct|thats right|that is right|right)
+// Word lists are shared (begin.rive's yeswords/nowords/maybewords), not
+// retyped here — same lists cv.rive's experiencefollowup block uses.
+//
+// This more specific trigger (yes + a nickname-lead phrase) is tried
+// before the plain one below, since RiveScript sorts %-scoped triggers by
+// specificity same as normal ones — a bare "yes"/"yes it is" has no
+// nicknamelead match and falls through unchanged (confirmed by testing).
++ (@yeswords) [*] (@nicknamelead) *
+% is * your name
+- <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>><set name={formal}<star3>{/formal}>Nice to meet you, <get name>. How can I help you today?
+
++ (@yeswords) [*]
 % is * your name
 - <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>Nice to meet you, <get pendingname>.<set name=<get pendingname>> How can I help you today?
 
-+ (no|nope|not quite|thats not right|that is not right|wrong)
++ (@nowords)
 % is * your name
 - <set unknownStreak=0><set userIntention=askname><set botIntention=<bot intent_askname>>Got it. Please tell me your name like this: "My name is Ana".
+
++ (@maybewords)
+% is * your name
+- <set unknownStreak=0><set userIntention=askname><set botIntention=<bot intent_askname>>No worries — just tell me your name directly whenever you are ready, like "My name is Ana".
 
 + (what is my name|do you know my name|remember my name)
 * <get name> != undefined => You told me your name is <get name>.

@@ -14,4 +14,12 @@
 + (cool|nice|great|awesome)
 - Glad you think so!
 
+// Generic acknowledgment, not tied to any specific prior question — happens
+// to have been reported after the ask-name unknownhint, but "good to know"
+// (or "ok"/"got it"/...) is an equally valid reply anywhere, so this is a
+// plain trigger, not %-scoped. No intent tag, same as the neighbors above —
+// a one-off social moment, not a topic worth tracking repeats on.
++ (good to know|ok|okay|got it|alright|understood|sounds good)
+- How can I help you today?
+
 < topic

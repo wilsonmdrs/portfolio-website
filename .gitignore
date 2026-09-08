@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local admin tooling data (chatbot testing corrections queue)
+/admin-data
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

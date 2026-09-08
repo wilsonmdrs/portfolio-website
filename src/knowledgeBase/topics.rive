@@ -3,6 +3,34 @@
 + (cv|resume|about wilson|about my cv|wilson cv)
 - Sure, let's talk about Wilson's CV. Ask about his summary, skills, languages, education, or experience.
 
+// Open-ended "tell me more about Wilson" style phrasing — distinct from
+// the exact-match trigger above (whose reply is a different, narrower
+// CTA); wrapped with [*] since the trigger above is alternation-only and
+// won't match as a substring of a longer sentence. Still loses to that
+// exact trigger for the bare short forms ("about wilson", "tell me about
+// wilson" with nothing else) since RiveScript prefers the more specific,
+// wildcard-free match — confirmed by testing.
++ [*] (want to know more about wilson|want to know about wilson|know more about wilson|learn more about wilson|tell me more about wilson|tell me about wilson) [*]
+- {@ setintent wilsonoverview}{@ ctrlintent wilsonoverview}<set pendingtopic=experience>What would you like to know about Wilson? We can start with his experience, what do you think?
+- {@ setintent wilsonoverview}{@ ctrlintent wilsonoverview}<set pendingtopic=skills>What would you like to know about Wilson? We can start with his skills, what do you think?
+- {@ setintent wilsonoverview}{@ ctrlintent wilsonoverview}<set pendingtopic=education>What would you like to know about Wilson? We can start with his education, what do you think?
+- {@ setintent wilsonoverview}{@ ctrlintent wilsonoverview}<set pendingtopic=languages>What would you like to know about Wilson? We can start with the languages he speaks, what do you think?
+
++ (@yeswords) [*]
+% [*] what do you think [*]
+* <get pendingtopic> == skills => {@ what are your skills}
+* <get pendingtopic> == education => {@ what is your education}
+* <get pendingtopic> == languages => {@ what languages do you speak}
+- {@ what is your experience}
+
++ (@nowords) [*]
+% [*] what do you think [*]
+- <set unknownStreak=0><set userIntention=wilsonoverviewfollowup><set botIntention=<bot intent_wilsonoverviewfollowup>>No problem! You can ask about Wilson's skills, education, languages, or a specific company instead.
+
++ (@maybewords) [*]
+% [*] what do you think [*]
+- <set unknownStreak=0><set userIntention=wilsonoverviewfollowup><set botIntention=<bot intent_wilsonoverviewfollowup>>No worries — I am here whenever you are ready. Just ask about anything related to Wilson, like his skills, experience, or education.
+
 + [lets] (chat|small talk|conversation|talk to me)
 - Sure, let's chat. Ask me anything, or say "joke" for a laugh.
 

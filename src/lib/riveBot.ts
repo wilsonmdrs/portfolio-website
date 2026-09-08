@@ -30,6 +30,27 @@ const activeSessions = new Map<string, string>(); // visitor userId -> session i
 // Singleton bot loader
 let botPromise: Promise<RiveScript> | null = null;
 
+// Freelance work at Exact Code Sistemas began here (see cv_roles in
+// begin.rive) — the start of Wilson's continuous professional experience.
+const EXPERIENCE_START = Date.UTC(2017, 2, 1); // month is 0-indexed: 2 = March
+
+/**
+ * Whole years elapsed from EXPERIENCE_START to now, floored (so it only
+ * ticks over on the actual March 1st anniversary, not just the new year).
+ * Recomputed fresh each time a session starts (see startConversation()
+ * below) rather than hardcoded in a .rive file, so it never goes stale —
+ * the whole reason this exists instead of a literal "9 years" in cv.rive.
+ */
+function calculateYearsOfExperience(now: Date = new Date()): number {
+  const start = new Date(EXPERIENCE_START);
+  let years = now.getUTCFullYear() - start.getUTCFullYear();
+  const beforeAnniversaryThisYear =
+    now.getUTCMonth() < start.getUTCMonth() ||
+    (now.getUTCMonth() === start.getUTCMonth() && now.getUTCDate() < start.getUTCDate());
+  if (beforeAnniversaryThisYear) years -= 1;
+  return years;
+}
+
 async function readAllRiveFiles(dir: string): Promise<string[]> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const contents: string[] = [];
@@ -77,7 +98,54 @@ async function initBot(): Promise<RiveScript> {
   return bot;
 }
 
+async function collectRiveFilePaths(dir: string): Promise<string[]> {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const paths: string[] = [];
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) paths.push(...(await collectRiveFilePaths(full)));
+    else if (entry.isFile() && entry.name.endsWith(".rive")) paths.push(full);
+  }
+  return paths;
+}
+
+/** mtimes of every .rive file, joined — changes whenever any of them is edited. */
+async function computeKbSignature(): Promise<string> {
+  const files = await collectRiveFilePaths(KB_ROOT);
+  const stats = await Promise.all(
+    files.sort().map(async (file) => `${file}:${(await fs.stat(file)).mtimeMs}`),
+  );
+  return stats.join("|");
+}
+
+let botSignature = "";
+
+/**
+ * Checked fresh on every call (dev only — a no-op in production, where
+ * .rive files never change at runtime) instead of relying on a background
+ * watcher/timer to notice edits and invalidate a cached bot. A prior
+ * fs.watch-based version, and later a setInterval-polling version, both
+ * proved unreliable in practice: edits sometimes silently weren't picked
+ * up (confirmed more than once — a verified-correct .rive fix kept
+ * replaying its old, wrong answer until a server restart or an unrelated
+ * extra file touch nudged it). Re-checking the mtime signature on every
+ * actual use, rather than on a timer that can silently stop firing or
+ * belong to a different module instance than the one serving a given
+ * request, removes that whole class of bug — the cost is a handful of
+ * cheap fs.stat calls per request, negligible for local dev tooling.
+ */
 export async function getBot(): Promise<RiveScript> {
+  if (process.env.NODE_ENV !== "production") {
+    try {
+      const sig = await computeKbSignature();
+      if (sig !== botSignature) {
+        botSignature = sig;
+        botPromise = initBot();
+      }
+    } catch (err) {
+      console.log("[riveBot] KB signature check failed, using cached bot", err);
+    }
+  }
   if (!botPromise) botPromise = initBot();
   return botPromise;
 }
@@ -96,11 +164,28 @@ export async function startConversation(userId: string): Promise<void> {
   const sessionId = randomUUID();
   activeSessions.set(userId, sessionId);
   await bot.setUservar(sessionId, "currentSession", "opening");
+  // Per-session, not a global `! var` despite the cv_ prefix matching the
+  // naming convention for CV facts elsewhere in begin.rive — it has to be
+  // read via <get cv_experience_years> in .rive replies, not <bot ...>.
+  await bot.setUservar(sessionId, "cv_experience_years", String(calculateYearsOfExperience()));
 }
 
 /** Check if a conversation has been started for userId */
 export function hasConversation(userId: string): boolean {
   return activeSessions.has(userId);
+}
+
+/**
+ * Look up the full RiveScript uservar snapshot for a visitor's active
+ * session — the same data logInteractionVars() prints to console, but
+ * returned for callers (the admin page) that need to render it instead of
+ * just logging it. Returns null if the visitor has no active session.
+ */
+export async function getSessionVars(userId: string): Promise<Record<string, unknown> | null> {
+  const sessionId = activeSessions.get(userId);
+  if (!sessionId) return null;
+  const bot = await getBot();
+  return bot.getUservars(sessionId);
 }
 
 /** Optional: end a conversation (clear RiveScript session vars) */
@@ -114,6 +199,50 @@ export async function endConversation(userId: string): Promise<void> {
   } catch {
     // ignore
   }
+}
+
+/**
+ * Replay a full conversation (oldest message first) against the current
+ * knowledge base in a throwaway session — not tied to any visitor/admin
+ * tab, never recorded into chatHistory. Returns the reply to the LAST
+ * message, i.e. the one that was originally flagged.
+ *
+ * Replaying only the flagged message in isolation is not equivalent to
+ * what actually happened: RiveScript's `%` (Previous) triggers match
+ * against the bot's immediately preceding reply, so a single-message
+ * replay silently loses that context and can produce a *different* wrong
+ * reply that looks "changed" but was never actually fixed. Feeding the
+ * whole prior exchange back in first reconstructs that context, the same
+ * way the real session built it up turn by turn.
+ *
+ * `priorInputs` must already be normalized (this is exactly what
+ * RiveScript's own `__history__.input` stores, since ask() below always
+ * calls bot.reply() with prep.normalized) — do not re-preprocess them.
+ */
+export async function replayConversation(
+  priorInputs: string[],
+  finalMessage: string,
+): Promise<{ reply: string; vars: Record<string, unknown> }> {
+  if (!finalMessage) throw new Error("finalMessage is required");
+  const bot = await getBot();
+
+  const sessionId = randomUUID();
+  await bot.setUservar(sessionId, "currentSession", "opening");
+  await bot.setUservar(sessionId, "cv_experience_years", String(calculateYearsOfExperience()));
+
+  for (const input of priorInputs) {
+    await bot.reply(sessionId, input);
+  }
+
+  const prep = preProcessEn(finalMessage, { expandContractions: true });
+  const reply = await bot.reply(sessionId, prep.normalized);
+  const vars = await bot.getUservars(sessionId);
+  try {
+    bot.clearUservars(sessionId);
+  } catch {
+    // ignore
+  }
+  return { reply, vars };
 }
 
 /** Ask a question on behalf of a started user session */

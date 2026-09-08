@@ -30,9 +30,27 @@
 * <get ctrl_education> >= 1 => {@ setintent education}{@ ctrlintent education}You already asked about <bot intent_education> — is there something else about Wilson you would like to know?
 - {@ setintent education}{@ ctrlintent education}Wilson holds a <bot cv_education>.
 
-+ (what is your experience|career|employment history|professional experience|@expwords)
++ (what is your experience|career|employment history|professional experience|@expwords|[*] (wilson|wilsons|your|his) experience [*])
 * <get ctrl_experience> >= 1 => {@ setintent experience}{@ ctrlintent experience}You already asked about <bot intent_experience> — is there something else about Wilson you would like to know?
-- {@ setintent experience}{@ ctrlintent experience}Wilson's experience: <bot cv_roles>
+- {@ setintent experience}{@ ctrlintent experience}Wilson has over <get cv_experience_years> years of professional experience as a software engineer, with a strong focus on frontend development, spanning companies like <bot cv_companies>. Would you like to know more about a specific company or area, like his mobile or AI experience?
+
+// % (Previous) block: the reply above ends with an open question, and
+// without this, a bare "yes"/"no"/"maybe" answer to it falls through to
+// unknown.rive — same gap class the confirm-name flow already solved.
+// "Yes" proactively names one subject instead of asking another open
+// question, so it doesn't need its own further %-scoping. Word lists are
+// shared (begin.rive's yeswords/nowords/maybewords), not retyped here.
++ (@yeswords)
+% [*] would you like to know more about a specific company or area [*]
+- <set unknownStreak=0><set userIntention=experiencefollowup><set botIntention=<bot intent_experiencefollowup>>Sure — his most recent role has been at Smart Debrief. Ask about that, or any other company, skill, or topic you are curious about.
+
++ (@nowords)
+% [*] would you like to know more about a specific company or area [*]
+- <set unknownStreak=0><set userIntention=experiencefollowup><set botIntention=<bot intent_experiencefollowup>>No problem! Let me know if there is anything else you would like to ask about.
+
++ (@maybewords)
+% [*] would you like to know more about a specific company or area [*]
+- <set unknownStreak=0><set userIntention=experiencefollowup><set botIntention=<bot intent_experiencefollowup>>No worries — take your time. You can ask about any company or topic whenever you are ready.
 
 + (what companies have you worked for|which companies have you worked for|what companies|which companies|employers|@companies)
 * <get ctrl_companies> >= 1 => {@ setintent companies}{@ ctrlintent companies}You already asked about <bot intent_companies> — is there something else about Wilson you would like to know?
