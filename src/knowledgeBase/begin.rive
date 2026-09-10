@@ -25,6 +25,18 @@
 // lead-in alternation in greetings.rive's main name-capture trigger.
 ! array namelead = my name is|it is|i am|im|you can call me|please call me|call me
 
+// Groups the five company-blurb intents together so topics.rive's
+// generic "what else can you tell me" trigger can look up, via
+// <bot followupgroup_<get userIntention>>, whether the current topic is
+// ANY company blurb without repeating five separate `== smartdebrief`/
+// `== moomenti`/... conditions — same dynamic bot-var-by-key lookup
+// pattern already used for intent_<key>/unknownhint_<key> above.
+! var followupgroup_smartdebrief = company
+! var followupgroup_moomenti = company
+! var followupgroup_redit = company
+! var followupgroup_exactcode = company
+! var followupgroup_mobiweb = company
+
 // Off-topic/skeptical message handling (smalltalk.rive) — a hiring/fit
 // question and a complaint about the bot itself are different enough in
 // tone to need separate replies, so two arrays rather than one.
@@ -86,6 +98,11 @@
 // unknownhint if the visitor's next reply doesn't match anything.
 ! var intent_wilsonoverview = what to know about wilson first
 ! var intent_wilsonoverviewfollowup = what to ask about next
+// Generic "what else can you tell me" continuation prompt (topics.rive) —
+// same conversational-flow class as experiencefollowup/companyfollowup
+// above (set manually, not via {@ setintent}), used only for the branch
+// that has no more specific topic to redirect into.
+! var intent_genericfollowup = what to ask about next
 ! var intent_companies = the companies Wilson worked at
 ! var intent_smartdebrief = Wilson's experience at Smart Debrief
 ! var intent_moomenti = Wilson's experience at Moomenti
@@ -133,6 +150,7 @@
 ! var unknownhint_companyfollowup = Sorry, I did not quite get that. You can say yes or no, or just ask about a specific company or skill area.
 ! var unknownhint_wilsonoverview = You can say things like "experience", "skills", "education", or a company name to start.
 ! var unknownhint_wilsonoverviewfollowup = Sorry, I did not quite get that. You can say yes or no, or just ask about a specific topic like skills or education.
+! var unknownhint_genericfollowup = Sorry, I did not quite get that. You can ask about Wilson's summary, skills, languages, education, experience, or a specific company.
 ! var unknownhint_companies = Sorry, I did not quite get that. If you're asking which companies Wilson worked at, try "which companies have you worked for?"
 ! var unknownhint_smartdebrief = Sorry, I did not quite get that. If you're asking about Wilson's time at Smart Debrief, try "tell me about smart debrief?"
 ! var unknownhint_moomenti = Sorry, I did not quite get that. If you're asking about Wilson's time at Moomenti, try "tell me about moomenti?"

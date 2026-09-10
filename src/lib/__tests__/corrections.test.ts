@@ -222,6 +222,53 @@ const COMPANY_FOLLOWUP_CASES: ConversationCase[] = [
   },
 ];
 
+// --- Generic topic-continuation follow-up ("what else can you tell me") ---
+// Previously fell straight through to unknown.rive's catch-all instead of
+// continuing whatever topic was already in play — reported bug: asked
+// about skills, then "what else can you tell me?" got a generic "I did
+// not quite follow" reply instead of more detail or a topic suggestion.
+const TOPIC_CONTINUATION_CASES: ConversationCase[] = [
+  {
+    name: "'what else can you tell me' after a skills answer suggests another subject, not the generic fallback",
+    steps: [
+      { send: "what are your skills", expectContains: "wilson's skills include" },
+      {
+        send: "what else can you tell me?",
+        expectContains: "wilson's skills",
+        expectNotContains: "i did not quite follow",
+      },
+    ],
+  },
+  {
+    name: "'what else can you tell me' after the experience answer offers the same company follow-up as its own trailing question",
+    steps: [
+      { send: "what is your experience" },
+      {
+        send: "what else can you tell me?",
+        expectContains: "smart debrief",
+        expectNotContains: "i did not quite follow",
+      },
+    ],
+  },
+  {
+    name: "'what else can you tell me' after a company blurb offers the same 'another company or skill' follow-up",
+    steps: [
+      { send: "tell me about mobiweb" },
+      {
+        send: "what else can you tell me?",
+        expectContains: "moomenti",
+        expectNotContains: "i did not quite follow",
+      },
+    ],
+  },
+  {
+    name: "the wilsonoverview randomized-topic prompt still works after adding the generic continuation trigger (regression: 'tell me more' substring collision)",
+    steps: [
+      { send: "tell me more about wilson", expectContains: "what would you like to know about wilson" },
+    ],
+  },
+];
+
 describe("regression suite", () => {
   describe("knowledge-base fixes", () => {
     for (const c of KB_FIX_CASES) it(c.name, () => run(c));
@@ -245,6 +292,10 @@ describe("regression suite", () => {
 
   describe("per-company follow-up", () => {
     for (const c of COMPANY_FOLLOWUP_CASES) it(c.name, () => run(c));
+  });
+
+  describe("generic topic-continuation follow-up", () => {
+    for (const c of TOPIC_CONTINUATION_CASES) it(c.name, () => run(c));
   });
 
   // Not table-driven: the "tell me more about Wilson" prompt randomly

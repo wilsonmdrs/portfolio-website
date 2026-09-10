@@ -37,6 +37,39 @@
 % [*] what do you think [*]
 - <set unknownStreak=0><set userIntention=wilsonoverviewfollowup><set botIntention=<bot intent_wilsonoverviewfollowup>>No worries — I am here whenever you are ready. Just ask about anything related to Wilson, like his skills, experience, or education.
 
+// Generic "what else can you tell me" continuation prompt — previously
+// fell straight through to unknown.rive's catch-all instead of
+// continuing whatever topic was already in play (reported bug: asked
+// about skills, then "what else can you tell me?" got a generic "I did
+// not quite follow" reply instead of more detail or a topic suggestion).
+// Branches on the CURRENT userIntention and reuses the exact same
+// follow-up flows already established for the experience and
+// company-blurb replies (experiencefollowup/companyfollowup — see
+// cv.rive's %-scoped yeswords blocks for the original versions of these
+// two messages) rather than inventing new topic-suggestion text.
+// followupgroup_<key> (begin.rive) groups the five company intents so
+// one condition covers all of them instead of five separate `==` checks
+// — same dynamic bot-var-by-key lookup already used for intent_<key>.
+//
+// [*] on both sides since these are natural-sentence phrasings, not
+// exact short forms (same convention as "tell me more about wilson"
+// above). Deliberately does NOT include bare "tell me more": that
+// phrase is a *substring* of "tell me more about wilson" (claimed by
+// the trigger above) and of cv.rive's atomic "tell me more" ->
+// career-summary trigger, and both this trigger and the one above are
+// in the same word-count/wildcard sort bucket, where RiveScript ties by
+// raw pattern length rather than semantic specificity — including it
+// here made this trigger win that tie and swallow "tell me more about
+// wilson", breaking the wilsonoverview flow (confirmed by testing: it
+// regressed the existing "yes after the randomized prompt" test). The
+// other phrasings below don't share a substring with either of those,
+// so they're safe.
++ [*] (what else can you tell me|what else|anything else|tell me something else|what other things can you tell me|what more can you tell me|anything more) [*]
+* <get currentSession> == opening => <set unknownStreak=0><set userIntention=genericfollowup><set botIntention=<bot intent_genericfollowup>>Not sure what you would like more detail on yet — you can ask about Wilson's summary, skills, languages, education, experience, or a specific company.
+* <get userIntention> == experience => <set unknownStreak=0><set userIntention=experiencefollowup><set botIntention=<bot intent_experiencefollowup>>Sure — his most recent role has been at Smart Debrief. Ask about that, or any other company, skill, or topic you are curious about.
+* <bot followupgroup_<get userIntention>> == company => <set unknownStreak=0><set userIntention=companyfollowup><set botIntention=<bot intent_companyfollowup>>Sure! You can ask about Smart Debrief, Moomenti, Mobiweb, Red IT, or Exact Code Sistemas, or about a specific skill like frontend, mobile, testing, or AI.
+- That is everything specific I have on <bot intent_<get userIntention>> for now. You can also ask about Wilson's summary, skills, languages, education, experience, or a specific company like Smart Debrief or Moomenti.<set unknownStreak=0><set userIntention=genericfollowup><set botIntention=<bot intent_genericfollowup>>
+
 + [lets] (chat|small talk|conversation|talk to me)
 - Sure, let's chat. Ask me anything, or say "joke" for a laugh.
 
