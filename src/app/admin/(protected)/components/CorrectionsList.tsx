@@ -18,7 +18,7 @@ type Correction = {
     correctAnswer: string;
     reasoning: string;
   };
-  approved?: boolean;
+  needsReedit?: boolean;
   reviewNotes?: string;
   replay?: {
     reply: string;
@@ -27,21 +27,75 @@ type Correction = {
   };
 };
 
+function correctionsToMarkdown(entries: Correction[]): string {
+  const lines: string[] = [
+    "# Chatbot corrections export",
+    `Generated: ${new Date().toISOString()}`,
+    `Total: ${entries.length}`,
+    "",
+  ];
+
+  entries.forEach((entry, index) => {
+    const replayChanged = entry.replay ? entry.replay.reply !== entry.conversation.reply : null;
+    lines.push(
+      "---",
+      "",
+      `## ${index + 1}. "${entry.conversation.message}"`,
+      "",
+      `- id: ${entry.id}`,
+      `- created: ${entry.createdAt}`,
+      `- needs re-edit: ${entry.needsReedit ? "yes" : "no"}`,
+      `- bot replied: "${entry.conversation.reply}"`,
+      `- instructions: ${entry.instructions}`,
+      `- reviewer notes: ${entry.reviewNotes || "(none)"}`,
+    );
+
+    if (entry.suggestion) {
+      lines.push(
+        "- drafted suggestion:",
+        `  - key: ${entry.suggestion.suggestedKey}`,
+        `  - trigger phrases: ${entry.suggestion.triggerPhrases.join(", ")}`,
+        `  - correct answer: ${entry.suggestion.correctAnswer}`,
+        `  - unknownhint: ${entry.suggestion.unknownhint}`,
+        `  - reasoning: ${entry.suggestion.reasoning}`,
+      );
+    } else {
+      lines.push("- drafted suggestion: (none yet)");
+    }
+
+    if (entry.replay) {
+      lines.push(
+        "- latest retest:",
+        `  - replied now: "${entry.replay.reply}"`,
+        `  - changed since flagged: ${replayChanged ? "yes" : "no"}`,
+        `  - checked at: ${entry.replay.repliedAt}`,
+      );
+    } else {
+      lines.push("- latest retest: (not run yet)");
+    }
+
+    lines.push("");
+  });
+
+  return lines.join("\n");
+}
+
 export function CorrectionsList() {
   const [corrections, setCorrections] = useState<Correction[]>([]);
   const [loading, setLoading] = useState(true);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [recheckingId, setRecheckingId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
     try {
-      // POST, not GET: replays every approved entry's original message
-      // (full prior history, not just the flagged line — see
-      // riveBot.ts's replayConversation) against the live bot before
-      // returning the list, so the changed/unchanged badge is always
-      // current. Safe to do on every load now that getBot() re-checks the
-      // KB's mtime signature on every call (see riveBot.ts) instead of
-      // relying on a background watcher to notice edits.
+      // POST, not GET: replays every entry's original message (full
+      // prior history, not just the flagged line — see riveBot.ts's
+      // replayConversation) against the live bot before returning the
+      // list, so the changed/unchanged box is always current. Safe to do
+      // on every load now that getBot() re-checks the KB's mtime
+      // signature on every call (see riveBot.ts) instead of relying on a
+      // background watcher to notice edits.
       const res = await fetch("/api/admin/corrections/replay", { method: "POST" });
       const data = await res.json();
       const list: Correction[] = data.corrections ?? [];
@@ -62,7 +116,7 @@ export function CorrectionsList() {
     load();
   }, []);
 
-  async function patch(id: string, body: Partial<Pick<Correction, "approved" | "reviewNotes">>) {
+  async function patch(id: string, body: Partial<Pick<Correction, "needsReedit" | "reviewNotes">>) {
     await fetch(`/api/admin/corrections/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -71,8 +125,28 @@ export function CorrectionsList() {
     await load();
   }
 
-  async function toggleApprove(entry: Correction) {
-    await patch(entry.id, { approved: !entry.approved });
+  async function toggleNeedsReedit(entry: Correction) {
+    await patch(entry.id, { needsReedit: !entry.needsReedit });
+  }
+
+  // Rechecks just this one entry — a full load()/Refresh replays every
+  // correction in the queue, which is wasteful (and slow) when you're
+  // only iterating on a single fix.
+  async function recheckOne(id: string) {
+    setRecheckingId(id);
+    try {
+      const res = await fetch("/api/admin/corrections/replay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.correction) {
+        setCorrections((prev) => prev.map((c) => (c.id === id ? data.correction : c)));
+      }
+    } finally {
+      setRecheckingId(null);
+    }
   }
 
   async function saveNote(id: string) {
@@ -84,6 +158,17 @@ export function CorrectionsList() {
     await load();
   }
 
+  function downloadExport() {
+    const markdown = correctionsToMarkdown(corrections);
+    const blob = new Blob([markdown], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `chatbot-corrections-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (corrections.length === 0) {
     return (
@@ -93,40 +178,30 @@ export function CorrectionsList() {
     );
   }
 
-  const hasApproved = corrections.some((entry) => entry.approved);
-
   return (
     <div className="space-y-3">
-      {hasApproved && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            Approved entries are re-checked against the live bot every time this loads.
-          </p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          Every correction is re-checked against the live bot each time this loads.
+        </p>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={downloadExport}>
+            Download corrections (.md)
+          </Button>
           <Button size="sm" variant="outline" onClick={load}>
             Refresh
           </Button>
         </div>
-      )}
+      </div>
       {corrections.map((entry) => {
-        const needsSuggestion = !entry.suggestion;
         return (
-          <Card
-            key={entry.id}
-            className={
-              entry.approved ? "border-green-500" : needsSuggestion ? "border-amber-400" : undefined
-            }
-          >
+          <Card key={entry.id} className={entry.needsReedit ? "border-amber-400" : undefined}>
             <CardHeader>
               <CardTitle className="text-sm">
                 &quot;{entry.conversation.message}&quot;
-                {entry.approved && (
-                  <span className="ml-2 rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-normal text-green-900">
-                    ✓ approved
-                  </span>
-                )}
-                {!entry.approved && needsSuggestion && (
+                {entry.needsReedit && (
                   <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-normal text-amber-900">
-                    awaiting suggestion
+                    needs re-edit
                   </span>
                 )}
               </CardTitle>
@@ -141,7 +216,7 @@ export function CorrectionsList() {
 
               {entry.suggestion ? (
                 <div className="rounded border border-dashed p-2">
-                  <p className="font-semibold">Suggestion (AI-drafted, review before approving)</p>
+                  <p className="font-semibold">Suggestion (AI-drafted, review before applying)</p>
                   <p>Should say: {entry.suggestion.correctAnswer}</p>
                   <p>Trigger phrases: {entry.suggestion.triggerPhrases.join(", ")}</p>
                   <p>KEY: {entry.suggestion.suggestedKey}</p>
@@ -154,7 +229,7 @@ export function CorrectionsList() {
                 </p>
               )}
 
-              {entry.approved && entry.replay && (
+              {entry.replay && (
                 <div
                   className={
                     entry.replay.reply === entry.conversation.reply
@@ -176,7 +251,7 @@ export function CorrectionsList() {
                 <textarea
                   className="mt-1 w-full rounded border bg-transparent p-1.5 text-xs"
                   rows={2}
-                  placeholder="What should change before this is approved?"
+                  placeholder="What should change on the next edit pass?"
                   value={noteDrafts[entry.id] ?? ""}
                   onChange={(e) => setNoteDrafts((prev) => ({ ...prev, [entry.id]: e.target.value }))}
                 />
@@ -194,11 +269,18 @@ export function CorrectionsList() {
               <div className="flex gap-2 pt-1">
                 <Button
                   size="sm"
-                  variant={entry.approved ? "outline" : "default"}
-                  disabled={!entry.suggestion}
-                  onClick={() => toggleApprove(entry)}
+                  variant="outline"
+                  onClick={() => recheckOne(entry.id)}
+                  disabled={recheckingId === entry.id}
                 >
-                  {entry.approved ? "Unapprove" : "Approve"}
+                  {recheckingId === entry.id ? "Rechecking…" : "Recheck"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={entry.needsReedit ? "default" : "outline"}
+                  onClick={() => toggleNeedsReedit(entry)}
+                >
+                  {entry.needsReedit ? "Marked for re-edit ✓" : "Mark for re-edit"}
                 </Button>
                 <Button size="sm" variant="destructive" onClick={() => remove(entry.id)}>
                   Delete

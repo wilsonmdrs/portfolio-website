@@ -6,7 +6,7 @@ import { blockInProduction } from "@/lib/adminGuard";
 type MsgBody = { userId?: string; message?: string };
 
 export async function POST(req: Request) {
-  const blocked = blockInProduction();
+  const blocked = await blockInProduction();
   if (blocked) return blocked;
 
   try {

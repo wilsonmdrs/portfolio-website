@@ -1,16 +1,17 @@
 // src/lib/adminCorrections.ts
 //
-// Local-dev-only review queue for the /admin chatbot testing page. Plain
-// JSON-file-backed store (no database, matching the rest of this app) at
-// admin-data/corrections.json, git-ignored. Not meant to be read/written in
-// production — routes calling into this module gate on NODE_ENV themselves.
+// Review queue for the /admin chatbot testing page, backed by a Redis Hash
+// (CORRECTIONS_KEY, field = correction id, value = JSON) via the same
+// shared client chat history uses — see redisClient.ts. A Hash (not a
+// list, unlike interactionLog.ts's chat log) is the right structure here
+// because this store needs get/set/delete BY ID, which a Hash gives as
+// single atomic commands (hGet/hSet/hDel) — no read-modify-write-the-
+// whole-thing race to guard against, unlike a JSON file or a list.
 import { randomUUID } from "node:crypto";
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { getRedisClient } from "./redisClient";
 import { replayConversation } from "./riveBot";
 
-const DATA_DIR = path.join(process.cwd(), "admin-data");
-const DATA_FILE = path.join(DATA_DIR, "corrections.json");
+const CORRECTIONS_KEY = "admin:corrections";
 
 export type Correction = {
   id: string;
@@ -26,16 +27,17 @@ export type Correction = {
    * The admin's directive — what should change, in their own words. NOT the
    * literal bot reply and NOT a KEY: e.g. "the bot should suggest a new
    * subject" rather than a drafted sentence. A coding session reads this
-   * and derives the actual trigger phrases / KEY / reply text / unknownhint
-   * from it (see `suggestion`, below) — the admin doesn't author those.
+   * (and `reviewNotes`, below) and derives the actual trigger phrases /
+   * KEY / reply text / unknownhint from it — the admin doesn't author
+   * those directly, and edits the real .rive files straight from this
+   * plus `reviewNotes`, no separate approval step required.
    */
   instructions: string;
   /**
-   * Drafted from `instructions` (by a coding session or the
-   * /review-chat-corrections skill), never typed by the admin directly — a
-   * proposed fix for the admin to review. `approved` is the signal that
-   * this is ready to be written into the real .rive files as-is; if not,
-   * `reviewNotes` says what should change before it's approved.
+   * Optional drafted fix (by a coding session or the
+   * /review-chat-corrections skill), never typed by the admin directly —
+   * extra context for whoever edits the KB next. Purely informational:
+   * nothing in this app requires it before a correction can be acted on.
    */
   suggestion?: {
     triggerPhrases: string[];
@@ -45,20 +47,18 @@ export type Correction = {
     reasoning: string;
   };
   /**
-   * Explicit sign-off that `suggestion` is ready to be written into the
-   * real .rive files as-is — the signal a coding session should look for.
-   * Not approved yet just means "still under review, may need a revision
-   * note in `reviewNotes`."
+   * The admin looked at the latest `replay` and it still isn't right —
+   * flags this entry for another local KB-editing pass. Purely a signal
+   * for the admin/coding session; nothing here gates on it.
    */
-  approved?: boolean;
-  /** What should change before this is approved, if it isn't already. */
+  needsReedit?: boolean;
+  /** What should change on the next edit pass — the admin's own notes. */
   reviewNotes?: string;
   /**
    * Result of re-asking `conversation.message` against the live bot,
-   * refreshed automatically (see /api/admin/corrections/replay) whenever
-   * the corrections list loads for entries that are `approved` — lets the
-   * admin see, without any manual step, whether a KB edit landed for this
-   * correction yet.
+   * refreshed automatically (see /api/admin/corrections/replay) every
+   * time the corrections list loads, for every entry — lets the admin
+   * see, without any manual step, whether a KB edit landed yet.
    */
   replay?: {
     reply: string;
@@ -69,77 +69,56 @@ export type Correction = {
 
 export type NewCorrectionInput = Omit<Correction, "id" | "createdAt">;
 
-/**
- * Every read-modify-write against the file goes through this in-process
- * lock (a simple promise-chain mutex — this is a single Node process, so
- * this is sufficient, no cross-process file locking needed). Without it,
- * two nearly-simultaneous requests (e.g. two admin tabs both loading the
- * Corrections list, each triggering a replay pass) can each read the file,
- * mutate their own in-memory copy, and write back — the second write can
- * land mid-way through the first `fs.writeFile()` call, interleaving their
- * output into invalid JSON. Confirmed this happening in practice: a
- * corrupted file showed a `]` from one write immediately followed by a
- * timestamp fragment from a different write.
- */
-let queue: Promise<unknown> = Promise.resolve();
-function withLock<T>(fn: () => Promise<T>): Promise<T> {
-  const run = queue.then(fn, fn);
-  queue = run.then(
-    () => undefined,
-    () => undefined,
-  );
-  return run;
-}
-
-async function readAll(): Promise<Correction[]> {
+function parseEntry(raw: string): Correction | null {
   try {
-    const raw = await fs.readFile(DATA_FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw err;
+    return JSON.parse(raw) as Correction;
+  } catch {
+    return null;
   }
 }
 
-async function writeAll(entries: Correction[]): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(DATA_FILE, JSON.stringify(entries, null, 2), "utf8");
+async function readAll(): Promise<Correction[]> {
+  const redis = await getRedisClient();
+  if (!redis) return [];
+  const raw = await redis.hGetAll(CORRECTIONS_KEY);
+  return Object.values(raw)
+    .map(parseEntry)
+    .filter((entry): entry is Correction => entry !== null)
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 }
 
 export function listCorrections(): Promise<Correction[]> {
-  return withLock(() => readAll());
+  return readAll();
 }
 
-export function appendCorrection(input: NewCorrectionInput): Promise<Correction> {
-  return withLock(async () => {
-    const entries = await readAll();
-    const entry: Correction = {
-      ...input,
-      id: randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    entries.push(entry);
-    await writeAll(entries);
-    return entry;
-  });
+export async function appendCorrection(input: NewCorrectionInput): Promise<Correction> {
+  const entry: Correction = {
+    ...input,
+    id: randomUUID(),
+    createdAt: new Date().toISOString(),
+  };
+  const redis = await getRedisClient();
+  if (redis) await redis.hSet(CORRECTIONS_KEY, entry.id, JSON.stringify(entry));
+  return entry;
 }
 
-export function updateCorrection(
+export async function updateCorrection(
   id: string,
   patch: Partial<
-    Pick<Correction, "instructions" | "suggestion" | "approved" | "reviewNotes" | "replay">
+    Pick<Correction, "instructions" | "suggestion" | "needsReedit" | "reviewNotes" | "replay">
   >,
 ): Promise<Correction | null> {
-  return withLock(async () => {
-    const entries = await readAll();
-    const index = entries.findIndex((entry) => entry.id === id);
-    if (index === -1) return null;
+  const redis = await getRedisClient();
+  if (!redis) return null;
 
-    entries[index] = { ...entries[index], ...patch };
-    await writeAll(entries);
-    return entries[index];
-  });
+  const raw = await redis.hGet(CORRECTIONS_KEY, id);
+  if (!raw) return null;
+  const current = parseEntry(raw);
+  if (!current) return null;
+
+  const updated: Correction = { ...current, ...patch };
+  await redis.hSet(CORRECTIONS_KEY, id, JSON.stringify(updated));
+  return updated;
 }
 
 /**
@@ -161,40 +140,61 @@ function extractPriorInputs(vars: Record<string, unknown>): string[] {
 }
 
 /**
- * Re-runs every approved correction's original conversation (full prior
- * history + the flagged message) against the current knowledge base and
- * stores the fresh reply as `replay`. Called every time the admin
- * Corrections list loads (see CorrectionsList.tsx's load()) — safe to run
- * on every load because riveBot.ts's getBot() re-checks the KB's mtime
- * signature on every call, so this always sees the latest .rive content.
+ * Re-runs one correction's original conversation (full prior history +
+ * the flagged message) against the current knowledge base, stores the
+ * fresh reply as `replay`, and returns the updated entry — shared by
+ * replayAllCorrections (below) and replayCorrection's single-entry path.
  */
-export function replayApprovedCorrections(): Promise<Correction[]> {
-  return withLock(async () => {
-    const entries = await readAll();
-
-    // One read, mutate the in-memory array across the whole loop, one
-    // write at the end — not a read+write per entry (which is both
-    // needlessly slow and was itself a source of the same interleaving
-    // risk this lock exists to prevent, if this function's own iterations
-    // were ever the two racing writers).
-    for (const entry of entries) {
-      if (!entry.approved) continue;
-      const priorInputs = extractPriorInputs(entry.vars);
-      const { reply, vars } = await replayConversation(priorInputs, entry.conversation.message);
-      entry.replay = { reply, vars, repliedAt: new Date().toISOString() };
-    }
-
-    await writeAll(entries);
-    return entries;
-  });
+async function replayEntry(entry: Correction): Promise<Correction> {
+  const priorInputs = extractPriorInputs(entry.vars);
+  const { reply, vars } = await replayConversation(priorInputs, entry.conversation.message);
+  entry.replay = { reply, vars, repliedAt: new Date().toISOString() };
+  return entry;
 }
 
-export function deleteCorrection(id: string): Promise<boolean> {
-  return withLock(async () => {
-    const entries = await readAll();
-    const next = entries.filter((entry) => entry.id !== id);
-    if (next.length === entries.length) return false;
-    await writeAll(next);
-    return true;
-  });
+/**
+ * Re-runs every correction's original conversation against the current
+ * knowledge base. Called every time the admin Corrections list loads (see
+ * CorrectionsList.tsx's load()) — safe to run on every load because
+ * riveBot.ts's getBot() re-checks the KB's mtime signature on every call,
+ * so this always sees the latest .rive content, and each entry's `hSet`
+ * below is its own atomic write (no batching needed, unlike the old
+ * JSON-file version of this store).
+ */
+export async function replayAllCorrections(): Promise<Correction[]> {
+  const redis = await getRedisClient();
+  if (!redis) return [];
+
+  const entries = await readAll();
+  for (const entry of entries) {
+    await replayEntry(entry);
+    await redis.hSet(CORRECTIONS_KEY, entry.id, JSON.stringify(entry));
+  }
+  return entries;
+}
+
+/**
+ * Re-runs just one correction — for the per-item "Recheck" button, so
+ * checking on a single fix in progress doesn't also re-replay every other
+ * entry in the queue. Returns null if the id doesn't exist.
+ */
+export async function replayCorrection(id: string): Promise<Correction | null> {
+  const redis = await getRedisClient();
+  if (!redis) return null;
+
+  const raw = await redis.hGet(CORRECTIONS_KEY, id);
+  if (!raw) return null;
+  const entry = parseEntry(raw);
+  if (!entry) return null;
+
+  await replayEntry(entry);
+  await redis.hSet(CORRECTIONS_KEY, id, JSON.stringify(entry));
+  return entry;
+}
+
+export async function deleteCorrection(id: string): Promise<boolean> {
+  const redis = await getRedisClient();
+  if (!redis) return false;
+  const removed = await redis.hDel(CORRECTIONS_KEY, id);
+  return removed > 0;
 }

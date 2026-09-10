@@ -4,7 +4,7 @@ import { appendCorrection, listCorrections, type NewCorrectionInput } from "@/li
 import { blockInProduction } from "@/lib/adminGuard";
 
 export async function GET() {
-  const blocked = blockInProduction();
+  const blocked = await blockInProduction();
   if (blocked) return blocked;
 
   const corrections = await listCorrections();
@@ -12,7 +12,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const blocked = blockInProduction();
+  const blocked = await blockInProduction();
   if (blocked) return blocked;
 
   try {

@@ -6,12 +6,12 @@ import { blockInProduction } from "@/lib/adminGuard";
 type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: Request, { params }: Params) {
-  const blocked = blockInProduction();
+  const blocked = await blockInProduction();
   if (blocked) return blocked;
 
   const { id } = await params;
   const patch = (await req.json()) as Partial<
-    Pick<Correction, "instructions" | "suggestion" | "approved" | "reviewNotes" | "replay">
+    Pick<Correction, "instructions" | "suggestion" | "needsReedit" | "reviewNotes" | "replay">
   >;
 
   const updated = await updateCorrection(id, patch);
@@ -22,7 +22,7 @@ export async function PATCH(req: Request, { params }: Params) {
 }
 
 export async function DELETE(req: Request, { params }: Params) {
-  const blocked = blockInProduction();
+  const blocked = await blockInProduction();
   if (blocked) return blocked;
 
   const { id } = await params;
