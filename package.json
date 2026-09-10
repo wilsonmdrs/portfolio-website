@@ -2,6 +2,7 @@
   "name": "portfolio-website",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.14.0",
   "scripts": {
     "dev": "NODE_OPTIONS=--no-deprecation next dev --turbopack",
     "build": "ls -R src && next build --turbopack",
