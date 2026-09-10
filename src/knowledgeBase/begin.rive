@@ -17,6 +17,14 @@
 // you can call only Mary" instead of the full captured pendingname.
 ! array nicknamelead = call only|call me|just call me|but call me|you can call me|please call me|rather be called|prefer to be called
 
+// Lead-in phrases for a one-word name given right after the bot asks for
+// it (e.g. "call me Ana"). A separate array from nicknamelead above:
+// that one is scoped to the yes+correction flow and adding "im"/"i
+// am"/"it is" to it would risk false positives there (e.g. "yes im
+// busy" reads as a yeswords+nicknamelead match). Kept in sync with the
+// lead-in alternation in greetings.rive's main name-capture trigger.
+! array namelead = my name is|it is|i am|im|you can call me|please call me|call me
+
 // Off-topic/skeptical message handling (smalltalk.rive) — a hiring/fit
 // question and a complaint about the bot itself are different enough in
 // tone to need separate replies, so two arrays rather than one.

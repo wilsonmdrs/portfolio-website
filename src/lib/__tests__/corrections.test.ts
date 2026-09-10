@@ -82,8 +82,17 @@ const KB_FIX_CASES: ConversationCase[] = [
     steps: [{ send: "hi" }, { send: "Ana" }, { send: "yes it is", expectContains: "Nice to meet you, Ana" }],
   },
   {
-    name: "a two-word bare name is captured, not rejected as unparseable",
-    steps: [{ send: "hi" }, { send: "Madelaine Kincaid", expectContains: "Is Madelaine Kincaid your name?" }],
+    name: "a two-word bare name is captured (reduced to its first word), not rejected as unparseable",
+    steps: [
+      {
+        send: "hi",
+      },
+      {
+        send: "Madelaine Kincaid",
+        expectContains: "Is Madelaine your name?",
+        expectNotContains: "Kincaid",
+      },
+    ],
   },
 ];
 
@@ -150,11 +159,19 @@ const SEMANTIC_FALLBACK_CASES: ConversationCase[] = [
 // --- Name-capture edge cases ---
 const NAME_CAPTURE_CASES: ConversationCase[] = [
   {
-    name: "a three-word bare name is captured, not rejected",
+    name: "a three-word bare name is captured (reduced to its first word), not rejected",
     steps: [
       { send: "hi" },
-      { send: "Ana Maria Silva", expectContains: "Is Ana Maria Silva your name?" },
-      { send: "yes", expectContains: "Nice to meet you, Ana Maria Silva" },
+      {
+        send: "Ana Maria Silva",
+        expectContains: "Is Ana your name?",
+        expectNotContains: ["maria", "silva"],
+      },
+      {
+        send: "yes",
+        expectContains: "Nice to meet you, Ana",
+        expectNotContains: ["maria", "silva"],
+      },
     ],
   },
   {
@@ -166,12 +183,12 @@ const NAME_CAPTURE_CASES: ConversationCase[] = [
     ],
   },
   {
-    name: "a filler word between the lead-in phrase and the name isn't captured as part of the name",
+    name: "a filler word between the lead-in phrase and the name isn't captured as part of the name (and a trailing surname is dropped)",
     steps: [
       {
         send: "my name is actually Ana Silva",
-        expectContains: "Nice to meet you, Ana Silva",
-        expectNotContains: "actually",
+        expectContains: "Nice to meet you, Ana",
+        expectNotContains: ["actually", "silva"],
       },
     ],
   },

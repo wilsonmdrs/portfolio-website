@@ -9,12 +9,21 @@
 
 // [actually|really|literally] is optional and consumes a filler word
 // wedged between the lead-in phrase and the actual name ("my name is
-// actually Ana") so the captured star is just the name (+ surname, if
-// given) — not "Actually Ana" (confirmed by testing this was happening
-// before). Also confirmed a name that's literally "Actually" still falls
-// through correctly to the trailing *, since RiveScript backtracks when
-// consuming the optional word would leave nothing for the required *.
-+ (my name is|it is|i am|im|you can call me|call me) [actually|really|literally] *
+// actually Ana") so the captured star is just the name — not "Actually
+// Ana" (confirmed by testing this was happening before). Also confirmed
+// a name that's literally "Actually" still falls through correctly to
+// the trailing _, since RiveScript backtracks when consuming the
+// optional word would leave nothing for the required _.
+//
+// Only the FIRST word of whatever follows is kept as the name — a
+// trailing surname/middle name is deliberately dropped ("my name is Ana
+// Silva" -> "Ana", confirmed by testing), per product decision to store
+// first names only. The trailing _ captures that first word into star2;
+// the final [*] just consumes (without capturing — confirmed against
+// the real engine: an unmatched trailing [*] reads back as the literal
+// string "undefined" through <starN>, so it's never referenced) any
+// remaining words so the trigger still matches the full message.
++ (my name is|it is|i am|im|you can call me|call me) [actually|really|literally] _ [*]
 * <get name> == <formal> => <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>We already know each other, <get name>! How can I help today?
 - <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>Nice to meet you, {formal}<star2>{/formal}.<set name={formal}<star2>{/formal}> How can I help you today?
 
@@ -24,8 +33,9 @@
 // "i am"/"im" too, which are common enough mid-sentence that a leading
 // wildcard risks false positives) — explicit correction wording instead
 // of a bare leading [*], to keep the match intentional. Same optional
-// filler-word slot as above.
-+ (actually|wait|no|sorry) [*] (my name is|call me|you can call me) [actually|really|literally] *
+// filler-word slot as above, and same first-word-only capture (trailing
+// _ [*]) as the main lead-in trigger above.
++ (actually|wait|no|sorry) [*] (my name is|call me|you can call me) [actually|really|literally] _ [*]
 * <get name> == <formal> => <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>We already know each other, <get name>! How can I help today?
 - <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>>Got it, {formal}<star3>{/formal}.<set name={formal}<star3>{/formal}> How can I help you today?
 
@@ -51,6 +61,24 @@
 // (<get ctrl_greet> already handles a repeat "hi" with its own nudge) —
 // otherwise a second "hi" gets treated as a candidate name instead of a
 // greeting (confirmed by testing: "Is Hi your name?").
+// "call me Ana" / "im Ana" / "it is Ana" right after the bot asks for a
+// name is indistinguishable, by word count alone, from a bare two- or
+// three-word name ("Ana Silva") to the _ / _ _ / _ _ _ blocks below —
+// that's the reported bug: it got captured whole as the name ("Is Call
+// Me Ana your name?", confirmed by testing before this fix). This
+// trigger matches the lead-in phrase explicitly via @namelead, so its
+// pattern text is an "_"-containing (alpha) match same as the bare
+// blocks below, but at the same word count it sorts ahead of them by
+// raw pattern length (confirmed against the real engine — RiveScript.js
+// sorts same-word-count alpha triggers by trigger-text length,
+// descending, and this one is textually longer) and so wins the %
+// priority race. It redirects into the real lead-in trigger further
+// down this file (via a canonical "my name is <name>" phrasing) so only
+// the name is used and the reply logic isn't duplicated here.
++ [*] @namelead _
+% [*] (what should i call you|you can tell me your name) [*]
+- {@ my name is <star1>}
+
 + _
 % [*] (what should i call you|you can tell me your name) [*]
 * <star> == hi => {@ <star>}
@@ -69,20 +97,27 @@
 // and even an unrelated question like "what are your skills" (confirmed
 // by testing — each got wrongly asked "is that your name?"). An exact
 // two-word block avoids that: it only fires for precisely two bare words.
+//
+// Only <star1> (the first word) is used for pendingname below — <star2>
+// is still captured (needed for the good morning/afternoon/evening
+// exclusion checks) but deliberately not referenced in the name itself,
+// per product decision to store first names only ("Madelaine Kincaid"
+// -> "Madelaine", confirmed by testing).
 + _ _
 % [*] (what should i call you|you can tell me your name) [*]
 * <star1> <star2> == good morning => {@ good morning}
 * <star1> <star2> == good afternoon => {@ good afternoon}
 * <star1> <star2> == good evening => {@ good evening}
-- <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star1> <star2>{/formal}>Is <get pendingname> your name?
+- <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star1>{/formal}>Is <get pendingname> your name?
 
 // Same idea again, for a three-word bare name ("Ana Maria Silva"). No
 // known 3-word greeting phrase exists in the greet trigger's array to
 // exclude here (checked), so no redirect conditions needed like the
-// two-word block above.
+// two-word block above. Same first-word-only rule as the two-word block:
+// <star2>/<star3> are captured but not used in pendingname.
 + _ _ _
 % [*] (what should i call you|you can tell me your name) [*]
-- <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star1> <star2> <star3>{/formal}>Is <get pendingname> your name?
+- <set unknownStreak=0><set userIntention=confirmname><set botIntention=<bot intent_confirmname>><set pendingname={formal}<star1>{/formal}>Is <get pendingname> your name?
 
 // {formal} is regex-processed before <set>/<get> tags resolve, so
 // {formal}<get pendingname>{/formal} would format the literal text
@@ -97,7 +132,11 @@
 // before the plain one below, since RiveScript sorts %-scoped triggers by
 // specificity same as normal ones — a bare "yes"/"yes it is" has no
 // nicknamelead match and falls through unchanged (confirmed by testing).
-+ (@yeswords) [*] (@nicknamelead) *
+// Trailing _ [*] (not a bare *): only the first word after the
+// nickname-lead phrase is kept as the name override — a trailing
+// surname is dropped, same first-word-only rule as every other
+// name-capture trigger in this file (confirmed by testing).
++ (@yeswords) [*] (@nicknamelead) _ [*]
 % is * your name
 - <set unknownStreak=0><set userIntention=givename><set botIntention=<bot intent_givename>><set name={formal}<star3>{/formal}>Nice to meet you, <get name>. How can I help you today?
 
