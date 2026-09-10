@@ -45,10 +45,7 @@
 //   feature existed.
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { pipeline, env, type FillMaskPipeline } from "@huggingface/transformers";
-
-env.allowRemoteModels = false;
-env.localModelPath = "src/models";
+import type { FillMaskPipeline } from "@huggingface/transformers";
 
 const KB_ROOT = path.join(process.cwd(), "src", "knowledgeBase");
 const MODEL_ID = "Xenova/distilbert-base-uncased";
@@ -126,7 +123,20 @@ async function getVocabulary(): Promise<Set<string>> {
 let extractorPromise: Promise<FillMaskPipeline> | null = null;
 async function getFillMask(): Promise<FillMaskPipeline> {
   if (!extractorPromise) {
-    extractorPromise = pipeline("fill-mask", MODEL_ID, { dtype: "q8" });
+    // Dynamic, not a top-level import — see semanticFallback.ts's
+    // getExtractor() for why: a static import of this
+    // serverExternalPackages'd dependency loads eagerly the moment
+    // riveBot.ts loads (Turbopack's "externalImport"), so a broken
+    // onnxruntime-node native binding crashed every /api/chat/* and
+    // /api/admin/* request, not just the ones that reach this function —
+    // deferring it here puts the failure inside ask()'s existing
+    // try/catch around correctTypos instead.
+    extractorPromise = (async () => {
+      const { pipeline, env } = await import("@huggingface/transformers");
+      env.allowRemoteModels = false;
+      env.localModelPath = "src/models";
+      return pipeline("fill-mask", MODEL_ID, { dtype: "q8" });
+    })();
   }
   return extractorPromise;
 }

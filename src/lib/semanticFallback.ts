@@ -18,14 +18,8 @@
 // if silently answered as fact. This also means the threshold here can be
 // looser than a "just answer it" design would allow — a wrong guess costs a
 // "no" and a graceful fallback, not a wrong confident answer.
-import { pipeline, env, type FeatureExtractionPipeline } from "@huggingface/transformers";
+import type { FeatureExtractionPipeline } from "@huggingface/transformers";
 import { preProcessEn } from "./textPreps.en";
-
-// Vendored weights (see src/models/all-MiniLM-L6-v2) — never attempt a
-// network fetch at runtime, so this works the same in a Vercel serverless
-// function (read-only filesystem, no guaranteed egress) as it does locally.
-env.allowRemoteModels = false;
-env.localModelPath = "src/models";
 
 export type CanonicalPhrase = { key: string; phrase: string };
 
@@ -122,10 +116,33 @@ const MODEL_ID = "Xenova/all-MiniLM-L6-v2";
 let extractorPromise: Promise<FeatureExtractionPipeline> | null = null;
 async function getExtractor(): Promise<FeatureExtractionPipeline> {
   if (!extractorPromise) {
-    extractorPromise = pipeline("feature-extraction", MODEL_ID, {
-      dtype: "q8",
-      device: "cpu", // this library's Node entry point only supports cpu/coreml/webgpu — no "wasm" under Node
-    });
+    // Dynamic, not a top-level import: @huggingface/transformers is
+    // serverExternalPackages'd (next.config.ts), and Turbopack's
+    // "externalImport" mechanism `require()`s a static import of an
+    // external package EAGERLY the moment this module loads — which is
+    // riveBot.ts, so on every /api/chat/* and /api/admin/* request. A
+    // static import here meant a broken onnxruntime-node native binding
+    // (confirmed on Vercel: "libonnxruntime.so.1: cannot open shared
+    // object file") crashed the whole request before ask()'s own
+    // try/catch around findSemanticMatch (below) ever got a chance to
+    // run — including requests that never call this file at all, like
+    // /api/chat/start. Deferring the import to here means that same
+    // failure is just a rejected promise this function returns, which
+    // IS inside that try/catch, restoring the graceful-degradation this
+    // module's own design already intends.
+    extractorPromise = (async () => {
+      const { pipeline, env } = await import("@huggingface/transformers");
+      // Vendored weights (see src/models/all-MiniLM-L6-v2) — never
+      // attempt a network fetch at runtime, so this works the same in a
+      // Vercel serverless function (read-only filesystem, no guaranteed
+      // egress) as it does locally.
+      env.allowRemoteModels = false;
+      env.localModelPath = "src/models";
+      return pipeline("feature-extraction", MODEL_ID, {
+        dtype: "q8",
+        device: "cpu", // this library's Node entry point only supports cpu/coreml/webgpu — no "wasm" under Node
+      });
+    })();
   }
   return extractorPromise;
 }
