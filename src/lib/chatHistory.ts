@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { after } from "next/server";
+import { appendInteraction } from "./interactionLog";
 
 export type ConversationTurn = {
   id: string;
@@ -41,6 +43,32 @@ function isFallbackReply(reply: string): boolean {
   return FALLBACK_MARKERS.some((marker) => normalized.includes(marker));
 }
 
+/**
+ * Schedules the persistent-log write without making recordConversationTurn
+ * itself async (it's called from 5 places across riveBot.ts/groqBot.ts with
+ * no `await` today, since there was previously nothing to await). after()
+ * runs this once the response has been sent but keeps the serverless
+ * function alive until it settles — a bare fire-and-forget promise has no
+ * such guarantee and could be silently dropped once Vercel tears down the
+ * execution environment. after() requires an active request scope (Route
+ * Handler/Server Action/Server Component render); it throws synchronously
+ * outside one — which is exactly what src/lib/__tests__/corrections.test.ts
+ * does by calling ask() directly, so the catch falls back to a plain call
+ * there instead of letting every test in that suite throw.
+ */
+function scheduleInteractionPersist(turn: ConversationTurn): void {
+  const task = () => {
+    appendInteraction(turn).catch((err) => {
+      console.log("[chatHistory] interaction persistence failed", err);
+    });
+  };
+  try {
+    after(task);
+  } catch {
+    task();
+  }
+}
+
 export function recordConversationTurn(input: {
   userId: string;
   message: string;
@@ -64,11 +92,22 @@ export function recordConversationTurn(input: {
     history.slice(-MAX_TURNS_PER_USER),
   );
 
+  scheduleInteractionPersist(turn);
   return turn;
 }
 
 export function getConversationHistory(userId: string): ConversationTurn[] {
   return [...(store.turnsByUser.get(userId) ?? [])];
+}
+
+/**
+ * Drops this process's in-memory turns for a user — part of revoking
+ * consent (see /api/chat/revoke). Ephemeral anyway, but no reason to keep
+ * serving them from this instance once the visitor has asked to be
+ * forgotten.
+ */
+export function clearUserTurns(userId: string): void {
+  store.turnsByUser.delete(userId);
 }
 
 export type KnowledgeBaseSuggestion = {

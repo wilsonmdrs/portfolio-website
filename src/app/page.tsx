@@ -1,4 +1,5 @@
 import { Chat } from "@/components/Chat";
+import { CookieConsent } from "@/components/CookieConsent";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { AboutSection } from "@/components/sections/about";
@@ -18,6 +19,7 @@ export default function Home() {
         <ResumeSection />
       </main>
       <Footer />
+      <CookieConsent />
     </div>
   );
 }

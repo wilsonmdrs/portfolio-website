@@ -5,6 +5,9 @@ import type { ConversationTurn, KnowledgeBaseSuggestion } from "@/lib/chatHistor
 import { CHAT_PROVIDER, type ChatProvider } from "@/lib/chatConfig";
 import { askBrowserAI, getBrowserAIStatus } from "@/lib/browserAi";
 
+// userId is "" when the visitor hasn't accepted the cookie & data notice
+// yet (see components/Chat) — every entry point below is a no-op in that
+// case so nothing is sent to the server until they do.
 export function useChat({ userId }: { userId: string }) {
   const startedRef = useRef(false);
   // Actual provider for this session — may be downgraded from "browser-ai"
@@ -44,6 +47,7 @@ export function useChat({ userId }: { userId: string }) {
   }, [userId]);
 
   const start = useCallback(async () => {
+    if (!userId) return false;
     if (startedRef.current) return true;
     setError(null);
 
@@ -59,10 +63,14 @@ export function useChat({ userId }: { userId: string }) {
     }
 
     return startServer();
-  }, [startServer]);
+  }, [startServer, userId]);
 
   const sendMessage = useCallback(
     async (message: string) => {
+      if (!userId) {
+        setError("Accept the cookie & data notice to use the chat.");
+        return "";
+      }
       setPending(true);
       setError(null);
       try {
@@ -101,6 +109,7 @@ export function useChat({ userId }: { userId: string }) {
   );
 
   const loadHistory = useCallback(async () => {
+    if (!userId) return { history: [], suggestions: [] };
     setError(null);
     // Ensure the provider (browser-ai vs. server fallback) is resolved first.
     await start();
@@ -133,8 +142,9 @@ export function useChat({ userId }: { userId: string }) {
   }, [start, userId]);
 
   useEffect(() => {
+    if (!userId) return;
     start();
-  }, [start]);
+  }, [start, userId]);
 
   return {
     start, // call once on mount or before first send

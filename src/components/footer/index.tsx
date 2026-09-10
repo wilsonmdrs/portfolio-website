@@ -91,6 +91,16 @@ export function Footer() {
                   Resume
                 </Link>
               </motion.li>
+              <motion.li
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.9 }}
+                viewport={{ once: true }}
+              >
+                <Link href="/privacy" className="hover:text-primary transition">
+                  Privacy &amp; Cookies
+                </Link>
+              </motion.li>
             </ul>
           </motion.div>
 
