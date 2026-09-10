@@ -14,15 +14,28 @@ const nextConfig: NextConfig = {
   // can't see a dynamic directory walk like that, so without this the
   // .rive files are missing from the deployed serverless function —
   // works in `next dev`/`next start` (whole repo on disk), 500s in a real
-  // Vercel deployment. Deliberately scoped to just this small text
-  // directory, not src/models (the ~88MB local ML model weights
-  // semanticFallback.ts/typoCorrection.ts also read at runtime) — those
-  // failures are already caught and gracefully degrade to no-op (see
-  // riveBot.ts's try/catch around findSemanticMatch/correctTypos), and
-  // bundling that much extra weight into every API route risks tripping
-  // Vercel's per-function size limit instead.
+  // Vercel deployment.
+  //
+  // Second entry: onnxruntime-node's native binding (required eagerly the
+  // moment @huggingface/transformers is imported — not lazily on first
+  // use, so the try/catch around findSemanticMatch/correctTypos in
+  // riveBot.ts never gets a chance to run) dynamically loads
+  // libonnxruntime.so.1 relative to its own __dirname at require() time.
+  // Same file-tracing blind spot as above; confirmed via a real Vercel
+  // crash: "Failed to load external module @huggingface/transformers:
+  // libonnxruntime.so.1: cannot open shared object file". pnpm never
+  // hoists this transitive dependency to top-level node_modules, hence
+  // the .pnpm-nested glob. linux/{x64,arm64} only (Vercel's actual
+  // runtime platforms) — not darwin/win32, and deliberately not
+  // src/models (the ~88MB local ML model weights, loaded lazily and
+  // already caught by that same try/catch if missing) — every extra
+  // megabyte here risks tripping Vercel's per-function size limit
+  // instead of fixing anything.
   outputFileTracingIncludes: {
-    "/api/**": ["./src/knowledgeBase/**/*"],
+    "/api/**": [
+      "./src/knowledgeBase/**/*",
+      "./node_modules/.pnpm/onnxruntime-node@*/node_modules/onnxruntime-node/bin/napi-v6/linux/**/*",
+    ],
   },
 };
 
